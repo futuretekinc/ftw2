@@ -1,0 +1,274 @@
+@CHARSET "ISO-8859-1";
+
+.global, .btn, .nxtbtn, .scanbtn{
+	font-family: "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, Verdana, sans-serif;
+	-webkit-font-smoothing:antialiased;
+	-moz-font-smoothing: antialiased;
+    -o-font-smoothing: antialiased;
+    font-smoothing: antialiased;
+    font-size: 12px;
+}
+
+.global {
+	background-color: #BDE469;
+	margin-left: 3%;
+	line-height: 40px;
+	width: 1024px;
+}
+
+.logo, .pghead {
+	text-align: center;
+}
+
+h1.pghead{
+	font-size:26px;
+	text-decoration:underline overline;
+	color: threeddarkshadow;
+	/*font-style: italic;*/
+}
+
+.section {
+	text-align: left;
+	margin-left: 1%;
+}
+.bold {
+	font-weight: bold;
+}
+
+.list {
+	/*color: black;*/
+	text-decoration: none;
+	margin-bottom: 10px;
+	margin-top: 8px;
+	border-bottom: 2px ridge;
+	padding: 5px;
+	background-color: #BDE36e;
+}
+
+.gsspan {
+	display: inline;
+	margin-right: 10px;
+	font-weight: bolder;
+}
+
+div.aphdr {
+	font-size: larger;
+	font-style: bold;
+	color: navy;
+	text-shadow: gray;
+	margin-bottom: 25px;
+}
+
+.connect {
+	font-style: bold;
+	color: navy;
+	text-decoration: none;
+}
+
+.tbl {
+	text-align: center;
+	border: medium ridge;
+	border-collapse: collapse;
+}
+
+.row {
+	padding-bottom: 10px;
+}
+
+.col {
+	border: 2px ridge;
+	padding-right: 10px;
+}
+
+.ip {
+	line-height: 25 px;
+	border: 2px groove gray;
+	padding: 2px;
+	width: 30%;
+	margin: 5px;
+	left: 30%;
+}
+
+.radio {
+	line-height: 25px;
+	padding: 1px;
+	width: 30%;
+	margin: 5px;
+}
+
+.iprow {
+	font-weight: bold;
+	font-size:13px;
+	padding: 3px;
+	margin: 2px;
+}
+
+.octet {
+	max-width: 3em;
+	width: 3em;
+}
+
+label.iplbl {
+	text-align: right;
+	float: left;
+	/*width: 15%;*/
+	width: 250px;
+	/*margin-right: 10px;*/
+}
+.nxtbtn{
+	padding-left: 20%;
+}
+.center {
+    text-align: center;
+}
+
+
+.btn {
+	margin-left: 2em;
+    margin-right: 1.5em;
+    /*
+    padding-left: 2em;
+    padding-right: 2em;
+    */
+}
+
+.centerbtn, .centeror{
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+}
+	
+
+.land, .mainopts{
+	cursor: hand;
+	cursor: pointer;
+	color: gray;
+	font-weight: bold;
+	font-size: 18px;
+}
+
+.land{
+	text-align: center;
+}
+
+.mainopts{
+	text-align: left;
+	margin-left: 250px;
+}
+
+.fld {
+	/*width:auto;*/
+	/*width: 120px;*/
+	margin:5px 0 0 10px; 
+}
+
+.scanbtn{
+	width: 150px;
+	float: right;
+	margin: 8px 45% 0 10px;
+}
+
+#IEroot .scanbtn{
+	width: 150px;
+	float: right;
+	margin: -27px 45% 0 10px;
+}
+
+.or{
+	font-size:120%;
+	font-weight: bold;
+	text-align: center;
+	/*margin-left: 35px;*/
+}
+
+br.clr {
+	clear:left;
+	line-height:0;
+}
+
+.lbl, .sumlbl{
+	display: block;
+	float: left;
+	width: 150px;
+	padding: 5px 0 0 0;
+	
+	text-align: left;
+	line-height: normal;
+	font-weight: bold;
+	font-size:13px;
+}
+
+.lbl{
+	margin: 5px 5px 0 20px;
+}
+
+.sumlbl{
+	color: gray;
+	margin: 5px 0 0 20px;
+}
+
+.sumval{
+	color: blue;
+	width:auto;
+	margin:5px 0 0 10px;
+	font-weight:bold;
+	font-size: 13px;
+}
+
+.sep{
+	width: 50%;
+/*	text-align: center;*/
+	margin: 0 auto;
+}
+
+.ftr{
+	text-align: center;
+	/*font-style: oblique;*/
+	font-size: 14px;
+	color: gray;
+}
+
+.ftmode{
+	font-weight: bold;
+	font-size: 16px;
+	margin-left:5px;
+	margin-right: 5px;
+	/*color: brown;*/
+}
+
+fieldset {
+	border: 0 none;
+}
+
+.wizhead{
+	font-size: 16px;
+	/*font-style: oblique;*/
+	text-align: center;
+	margin-left: 10px;
+	text-decoration: underline;
+}
+
+.wpssum{
+	line-height: 25px;
+}
+
+.note, .notebold {
+	margin-left: 10px;
+}
+
+.notebold, .finalmsg{
+	font-weight: bold;
+}
+
+.finalmsg{
+	line-height: normal;
+}
+
+li.mainopts{
+	list-style-position: inside;
+}
+
+input.fwloc{
+	margin:5px 0 0 10px;
+	width: 300px;
+}

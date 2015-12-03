@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<workspace>
+  <project>
+    <path>$WS_DIR$\postfetch.ewp</path>
+  </project>
+  <project>
+    <path>$WS_DIR$\prefetch.ewp</path>
+  </project>
+  <project>
+    <path>$WS_DIR$\tls.ewp</path>
+  </project>
+  <batchBuild>
+    <batchDefinition>
+      <name>TLS BatchBuild</name>
+      <member>
+        <project>prefetch</project>
+        <configuration>Debug</configuration>
+      </member>
+      <member>
+        <project>tls</project>
+        <configuration>Debug</configuration>
+      </member>
+    </batchDefinition>
+  </batchBuild>
+</workspace>
+
+

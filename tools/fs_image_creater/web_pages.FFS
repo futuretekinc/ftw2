@@ -1,0 +1,27 @@
+
+;Files and imagename definitions
+files FILEDIR
+imagename webImage.bin
+bigendian 0
+
+;no split into separates block
+;split
+
+;Setting up Flash memory physical
+;29lv800BA
+flash 0 15 0x1000
+
+;Setting up EFFS
+f_maxblock 14
+f_blocksize 0x1000
+f_sectorsize 0x200
+f_sectorperblock 8
+f_blockstart 2
+
+f_descsize 4096
+f_cacheddescsize 0
+
+f_descblockstart 0
+f_descblockend 1
+
+

@@ -1,0 +1,382 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<meta http-equiv="Cache-control" content="no-cache" />
+<meta http-equiv="Expires" content="-1" />
+<meta http-equiv="Pragma" content="no-cache" />
+<title>Gainspan TLS</title>
+<link rel="stylesheet" href="css/styles.css" type="text/css" />
+<script>
+
+	
+   var tlsApiUrl = '/gainspan/profile/tls';
+   var firmwareVersionApiUrl = '/gainspan/system/firmware/version';
+   var timeOutValue = 5 * 1000;
+   var timeOutId = "";
+   var isGs2000 = false;
+   
+   /*
+    * Constants used in GS2000 conversion formulas
+    */
+   var GS2000_CONSTANT_B = 3900;
+   var GS2000_CONSTANT_T0 = 298.15;
+   var GS2000_CONSTANT_R0 = 10000;
+   var GS2000_CONSTANT_RINF =  GS2000_CONSTANT_R0 * Math.exp(-1.0 * GS2000_CONSTANT_B / GS2000_CONSTANT_T0);
+   
+	
+	function createMsXmlDoc () {
+	    if (typeof (ActiveXObject) != "undefined") {
+	        var progIDs = [
+	                        "Msxml2.DOMDocument.6.0", 
+	                        "Msxml2.DOMDocument.3.0", 
+	                        "MSXML2.DOMDocument", 
+	                        "MSXML.DOMDocument"
+	                      ];
+	        for (var i = 0; i < progIDs.length; i++) {
+	            try { 
+	                return new ActiveXObject(progIDs[i]); 
+	            } catch(e) {};
+	        }
+	    }
+	    return null;
+	}
+	
+	
+	function parseResponse (respTxt, respXml ) {
+	    var xmlDoc = respXml;
+	
+	    if (!xmlDoc || !xmlDoc.documentElement) {
+	        if (window.DOMParser) {
+	            var parser = new DOMParser();
+	            try {
+	                xmlDoc = parser.parseFromString (respTxt, "text/xml");
+	            } catch (e) {
+	                alert ("XML parsing error");
+	                return null;
+	            };
+	        }
+	        else {
+	            xmlDoc = createMsXmlDoc ();
+	            if (!xmlDoc) {
+	                return null;
+	            }
+	            xmlDoc.loadXML (respTxt);
+	
+	        }
+	    }
+	    return xmlDoc;
+	}
+
+	function getTagContent(node, tagName){
+		var tagElems = node.getElementsByTagName(tagName);
+		if(tagElems && tagElems.length > 0 && tagElems[0].firstChild){
+			return tagElems[0].firstChild.nodeValue;
+		}
+		else{
+			return '';
+		}
+	}
+	
+	function newAjaxRequest() {
+		var xhr = false;
+		try {
+			xhr = new XMLHttpRequest();
+		} catch (trymicrosoft) {
+			try {
+				xhr = new ActiveXObject("Msxml2.XMLHTTP.3.0");
+			} catch (othermicrosoft) {
+				try {
+					xhr = new ActiveXObject("Microsoft.XMLHTTP");
+				} catch (failed) {
+					xhr = false;
+				}
+			}
+		}
+
+		if (!xhr)
+			alert("Error initializing XMLHttpRequest!");
+
+		return xhr;
+	}
+
+	// Send a POST request asynchronously
+	function execPOST(url, postData, callback) {
+		var postRequest = newAjaxRequest();
+		// Register an event listener for change in state of the HTTP conversation
+		postRequest.onreadystatechange = function() {
+			if (postRequest.readyState == 4) {
+				// State 4: completed receiving the HTTP response. Now parse it.
+				if (postRequest.error) {
+					callback(1, "Request had an error.");
+				} else {
+					var status;
+					try {
+						// sometimes reading the status raises an exception.
+						// see: http://helpful.knobs-dials.com/index.php/"Component_returned_failure_code:_0x80040111_(NS_ERROR_NOT_AVAILABLE)"#0x80040111_.28NS_ERROR_NOT_AVAILABLE.29
+						status = postRequest.status;
+					} catch (err) {
+						callback(1, "Failed to get HTTP status from server.");
+						return;
+					}
+					if (status == 200 || status == 0) {
+						/* we often get a status of 0 when we access file:// urls*/
+						callback(0, postRequest.responseText);
+					} else {
+						callback(1, "POST: Unexpected HTTP Status: "
+								+ postRequest.status);
+					}
+				}
+			}
+		}
+		if (postRequest.overrideMimeType)
+			postRequest.overrideMimeType("application/json");
+		postRequest.open("POST", url + '?t=' + new Date().getTime(), true);
+		postRequest.send(postData);
+		return postRequest;
+	}
+
+	// Call a GET on a URI asynchronously
+	function execGET(url, callback) {
+		var getRequest = newAjaxRequest();
+		// Register an event listener for change in state of the HTTP conversation
+		getRequest.onreadystatechange = function() {
+			if (getRequest.readyState == 4) {
+				// State 4: completed receiving the HTTP response. Now parse it.
+				if (getRequest.error) {
+					callback(1, "Request had an error.");
+				} else {
+					var status;
+					try {
+						// sometimes reading the status raises an exception.
+						// see: http://helpful.knobs-dials.com/index.php/"Component_returned_failure_code:_0x80040111_(NS_ERROR_NOT_AVAILABLE)"#0x80040111_.28NS_ERROR_NOT_AVAILABLE.29
+						status = getRequest.status;
+					} catch (err) {
+						callback(1, "Failed to get HTTP status from server.");
+						return;
+					}
+					if (status == 200 || status == 0) {
+						// we often get a status of 0 when we access file:// urls
+						var contentType = getRequest.getResponseHeader("Content-Type");
+						
+						if(contentType.indexOf("xml") != -1){
+							callback(0, getRequest.responseText, getRequest.responseXml, 'xml')
+						} else if (contentType.indexOf("json") != -1){
+							callback(0, getRequest.responseText, '', 'json')
+						}
+						
+					} else {
+						callback(1, "GET: Unexpected HTTP Status: "
+								+ getRequest.status);
+					}
+				}
+			}
+		}
+		/*
+		if (getRequest.overrideMimeType)
+			getRequest.overrideMimeType("text/plain");
+		*/
+		getRequest.open("GET", url + '?t=' + new Date().getTime(), true);
+		getRequest.send(null);
+		return getRequest;
+	}
+	function getEle(fsName) {
+		return document.getElementById(fsName);
+	}
+
+	function recvTLS(status, message, messageXml, dataFormat) {
+		if(dataFormat == 'json'){
+			var tlsStateObj = eval("(" + message + ")");
+			var result1, result2;
+			result1 = 1.324 * tlsStateObj.lux;
+			result2 = result1.toFixed(3);
+			getEle("lux").innerHTML = result2;
+			result1 = 3890 / (Math.log((1024 / tlsStateObj.temp) - 1) + 13) - 273.15;
+			result2 = result1.toFixed(3);
+			getEle("temp").innerHTML = result2;
+			result1 = tlsStateObj.battery /1000;
+			result2 = result1.toFixed(3);
+			getEle("battery").innerHTML = result2;
+			getEle("rssi").innerHTML = tlsStateObj.rssi;
+			
+			getEle('apiver').innerHTML = tlsStateObj.version;
+		}
+		else if (dataFormat == 'xml'){
+			var tlsXml = parseResponse(message, messageXml);
+			var tls = tlsXml.getElementsByTagName('tls');
+			if(tls && tls.length > 0){
+				
+				var lux = getTagContent(tls[0], 'lux');
+				lux = convertLux(lux);
+				getEle("lux").innerHTML = lux.toFixed(3);
+				
+				
+				var temp = getTagContent(tls[0], 'temp');
+				temp = convertTemp(temp);
+				getEle("temp").innerHTML = temp.toFixed(3);
+				
+				var batt = getTagContent(tls[0], 'battery');
+				batt = batt / 1000;
+				getEle("battery").innerHTML = batt.toFixed(3);
+				
+				var rssi =  getTagContent(tls[0], 'rssi');
+				getEle("rssi").innerHTML = rssi;
+				
+				getEle('apiver').innerHTML = getTagContent(tls[0], 'version');
+			}
+		}
+		
+		var curTime, hr, ms, sec, suf;
+		curTime = new Date();
+		hr = curTime.getHours();
+		suf = ((hr > 11) ? ' PM' : ' AM');
+		hr = ((hr > 11) ? (hr - 12) : hr);
+		hr = (hr == 0) ? '12' : hr;
+		ms = curTime.getMinutes();
+		sec = curTime.getSeconds();
+		getEle("curTime").innerHTML = hr + ':' + ((ms > 9) ? ms : ('0' + ms))
+				+ ':' + ((sec > 9) ? sec : ('0' + sec)) + suf;
+	}
+	
+	function convertLux(lux){
+		if(isGs2000){
+			var multiplier_I = (330-lux*0.080586);
+    		if(multiplier_I < 15){
+    			return  multiplier_I * 6.67;
+    		} else {
+    			return 25 + (5 * multiplier_I);
+    		}
+		} else {
+			return 1.324 * lux;
+		}
+	}
+	
+	function convertTemp(temp){
+		if(isGs2000){
+			var multiplier_R = (10000*temp)/(4095 - temp);
+   			return GS2000_CONSTANT_B / ((Math.log(multiplier_R / GS2000_CONSTANT_RINF)))-273.15;
+		} else {
+			return 3890 / (Math.log((1024 / temp) - 1) + 13) - 273.15;
+		}
+	}
+	
+	function updateTimeOut(){
+		var newTimeOut = parseInt(getDropDownItemSelected());
+		if(newTimeOut >= 1 && newTimeOut <=60) {
+			clearTimeout(timeOutId);
+			timeOutValue = newTimeOut * 1000;
+			timeOutId= setTimeout('updateTLS(1)', timeOutValue);
+			return true;
+		}	else	{
+			alert("Please enter a valid time out between 1 and 60.");
+			return false;
+		}
+	}
+
+	function getDropDownItemSelected(){
+		
+		var drop = document.getElementById('selRefresh');
+		return drop.options[drop.selectedIndex].value;
+	}
+	
+	
+	function getContentOfId(id)	{
+		return document.getElementById(id).value;
+	}
+
+	function updateTLS(recurse) {
+		var lsResult = execGET(tlsApiUrl, recvTLS);
+		
+		if (recurse == true)
+			timeOutId = setTimeout('updateTLS(true)', timeOutValue);
+	}
+	
+	function populateDropDown(min, max){
+		var drop = document.getElementById('selRefresh');
+		
+		var defaultTimeout = timeOutValue / 1000;
+	   	for (var i=min, index=0;i<=max;i++, index++){
+			drop.options[index] = new Option(i, i, false); 
+		}
+	   	
+	   	drop.value = defaultTimeout;
+	}
+	
+	function initialize(){
+		doChipVersioncheck(function(){updateTLS(true);});
+		populateDropDown(1, 60);
+	}
+	
+	function doChipVersioncheck(callbackWhenChipVersionAvailable){
+		execGET(firmwareVersionApiUrl, function(status, message, messageXml, dataFormat){
+			if(dataFormat == 'xml'){
+				var fwXml = parseResponse(message, messageXml);
+				var version = fwXml.getElementsByTagName('version');
+				if(version && version.length > 0){
+					var chip = getTagContent(version[0], 'chip');
+				}
+				if(chip.indexOf('gs2000') >= 0){
+					isGs2000 = true;
+				}
+				callbackWhenChipVersionAvailable();
+			}
+		});
+	}
+	
+</script>
+</head>
+<body onload="initialize();">
+	<div class="global">
+		<div class="logo">
+			<img src="logo.gif" alt="GainSpan" />
+		</div>
+		<div id="pghead">
+			<h1 class="pghead">TLS Web Application</h1>
+		</div>
+		<div id="landing" class="section"></div>
+		<hr>
+		<div align="center">
+			<b>Light </b> : <span id="lux" class="sumval"></span> lux <br
+				class="clear" />
+		</div>
+		<div align="center">
+			<b>Temperature</b> : <span id="temp" class="sumval"></span> Celcius <br
+				class="clear" />
+		</div>
+		<div align="center">
+			<b>Battery</b>: <span id="battery" class="sumval"></span> Volts <br
+				class="clear" />
+		</div>
+		<div align="center">
+			<b>RSSI</b>: <span id="rssi" class="sumval"></span> dBm <br
+				class="clear" />
+		</div>
+		<div align="center">
+			<small>Updated at <span id="curTime"></span> </small>
+
+
+			<p />
+			<input type="button" value="Refresh" onclick="updateTLS(false)" /> <br>
+			<p />
+		</div>
+		<div align="center">
+			<b>Refresh Interval</b> <select id="selRefresh">
+			</select> <b>seconds.</b> <input type="submit" value="Set"
+				onClick='updateTimeOut()' />
+		</div>
+		<p />
+		<hr />
+		<div align="center">
+			<div>
+				<small>TLS Web-app Version: <b>0.8.1</b>
+				</small>
+			</div>
+			<div>
+				<small>TLS API Version: <span class="bold" id="apiver"></span>
+				</small>
+			</div>
+		</div>
+	</div>
+
+</body>
+</html>
+

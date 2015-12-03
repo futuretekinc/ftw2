@@ -1,0 +1,191 @@
+/*###ICF### Section handled by ICF editor, don't touch! ****/
+/*-Editor annotation file-*/
+/* IcfEditorFile="$TOOLKIT_DIR$\config\ide\IcfEditor\cortex_v1_0.xml" */
+/*
+
+ROM :
+	---------------------------------------------0x00000000
+	|											|	
+	|	 ROM (512K)  							|			
+	|											|	
+	|											|
+	---------------------------------------------0x0007FFFF
+	
+	
+SRAM : 
+    _________________________________________ 0x20000000
+    |                                       |
+    |   16KB reserved for ROM PATCH AUTO    |
+    |                                       |
+    |---------------------------------------|
+    |                                       |    
+    |   8KB reserved for ROM PATCH FPT      |
+    |                                       |
+    |---------------------------------------|
+    |                                       |
+    |   8KB reserved for predefined heap    |
+    |             ( Heap 1)                 |
+    |---------------------------------------|
+    |                                       |
+    |   				                    |
+    |										|
+    |                                       |
+    |   									|
+    |---------------------------------------| 0x2007FFFF
+
+
+Dual Port RAM:
+	---------------------------------------------0x20200000
+	|											|	
+	|	 Dual Port RAM (64K)  					|			
+	|											|	
+	|											|
+	---------------------------------------------0x2020FFFF
+*/
+
+define symbol _APP_RAM_START_ = 0x200121c8;/* First 192HB 0x20000000 - 0x2002FFFF is used by ROM. As defined in rom.icf*/
+define symbol _APP_CODE_SRAM_STRAT = 0x20040000; /* Code is placed at 256 KB*/
+define symbol _APP_RAM_END_ = 0x2008FFFF;
+
+
+/*-Specials-*/
+/* Max size that can be assigned to this is the limitation of RAM size 
+and it has to be power of 2 */
+define symbol __APP_CODE_SIZE__ = 0x00080000; /* 512 KB*/
+
+/* Should be 128KB. DONT MODIFIY THIS  */
+define symbol __ROM_AUTO_PATCH_SIZE_IN_FLASH__ = 0x00020000;
+
+/* It is 16KB. DONT MODIFIY THIS  */
+define symbol __ROM_AUTO_PATCH_SIZE_IN_SRAM___ = 0x00004000;
+
+/* Should be 8KB. DONT MODIFIY THIS */
+define symbol __ROM_PATCH_FPT_SIZE__ = 0x00002000;
+
+/* Should be 2KB. DONT MODIFIY THIS */
+define symbol __APP_STARTUP_CODE_SIZE__ = 0x00000800;
+
+     
+
+/*- Memory Regions for readonly section -*/
+define symbol __ICFEDIT_region_ROM_AUTO_PATCH_start__ = 0x00100000;
+define symbol __ICFEDIT_region_ROM_AUTO_PATCH_end__ = 
+    __ICFEDIT_region_ROM_AUTO_PATCH_start__ + __ROM_AUTO_PATCH_SIZE_IN_FLASH__ - 1;
+    
+define symbol __ICFEDIT_region_ROM_PATCH_FPT_start__ = 
+    __ICFEDIT_region_ROM_AUTO_PATCH_end__ + 1;
+	
+define symbol __ICFEDIT_region_ROM_PATCH_FPT_end__ = 
+                                      __ICFEDIT_region_ROM_PATCH_FPT_start__ + 
+                                      __ROM_PATCH_FPT_SIZE__ - 1;
+
+define symbol __ICFEDIT_region_APP_FLASH_STARTUP_start__ = 
+    __ICFEDIT_region_ROM_PATCH_FPT_end__ + 1;
+define symbol __ICFEDIT_region_APP_FLASH_STARTUP_end__ = 
+                                        __ICFEDIT_region_APP_FLASH_STARTUP_start__ + 
+                                        __APP_STARTUP_CODE_SIZE__ - 1;
+    
+/* The start address is made aligned to __APP_CODE_SIZE__ */    
+define symbol __ICFEDIT_region_APP_code_start__ = 
+    (__ICFEDIT_region_APP_FLASH_STARTUP_end__ + 1 + __APP_CODE_SIZE__ - 1) & 
+    ~(__APP_CODE_SIZE__ - 1 ); 
+	
+define symbol __ICFEDIT_region_APP_Code_end__   = 
+    __ICFEDIT_region_APP_code_start__ + __APP_CODE_SIZE__ - 1;
+
+/*-Memory Regions for readwrite section - */
+define symbol __ICFEDIT_region_APP_RAM_start__ = _APP_RAM_START_;
+define symbol __ICFEDIT_region_APP_RAM_end__   = _APP_CODE_SRAM_STRAT - 1;
+
+/**** End of ICF editor section. ###ICF###*/
+
+define memory mem with size = 4G;
+
+define region APP_FLASH_STARTUP_region   = 
+    mem:[from __ICFEDIT_region_APP_FLASH_STARTUP_start__ to 
+    __ICFEDIT_region_APP_FLASH_STARTUP_end__];
+    
+define region ROM_AUTO_PATCH_region   = 
+    mem:[from __ICFEDIT_region_ROM_AUTO_PATCH_start__ to 
+    __ICFEDIT_region_ROM_AUTO_PATCH_end__];
+    
+define region ROM_PATCH_FPT_region   = 
+    mem:[from __ICFEDIT_region_ROM_PATCH_FPT_start__ to 
+    __ICFEDIT_region_ROM_PATCH_FPT_end__];
+
+/*App code and the data init section*/    
+define region APP_CODE_region   = 
+    mem:[from __ICFEDIT_region_APP_code_start__ to 
+    __ICFEDIT_region_APP_Code_end__];
+ 
+ /* App read wirite region */       
+define region APP_RAM_region   = 
+    mem:[from __ICFEDIT_region_APP_RAM_start__  to __ICFEDIT_region_APP_RAM_end__ ];
+
+
+
+/* Contains both initialized and uninitialized data */
+define block BSS_SECTION
+{
+   section .bss 
+};
+/* Contains only initailized data section */
+define block DATA_SECTION
+{
+   section .data 
+};
+
+/* Conatins the initial values for initialized data segment */
+define block DATA_INIT_SECTION
+{
+   section .data_init
+};
+
+define block ROM_PATCH_AUTO
+{
+    readonly object rom_patch_auto.a
+};
+/* APP code section except the data init section, readonly secions of
+rom_patch_fpt, rom_patch_auto library. This contains the readonly section of
+geps_prefetch library
+*/
+define block APP_CODE_SECTION
+{
+   section .text, section .rodata, readonly  
+}
+except
+{
+    section __DLIB_PERTHREAD, section .data_init, readonly object rom_patch_fpt.a, 
+    readonly object rom_patch_auto.a, readonly object app_startup.o
+};
+
+define block ROM_PATCH_FPT_SECTION
+{
+    readonly object rom_patch_fpt.a
+};
+
+define block FREE_MEM with size = 0x04, alignment = 4 { };
+
+initialize manually { readwrite };
+initialize by copy with packing = none { section __DLIB_PERTHREAD }; /* Required in a multi-threaded application */
+do not initialize  { section .noinit, readwrite };
+
+place in ROM_AUTO_PATCH_region { block ROM_PATCH_AUTO };
+place in ROM_PATCH_FPT_region { block ROM_PATCH_FPT_SECTION };
+place in APP_FLASH_STARTUP_region { readonly object app_startup.o };
+
+place in APP_CODE_region   {  block APP_CODE_SECTION, block DATA_INIT_SECTION, };
+
+place in APP_RAM_region   { block BSS_SECTION, readwrite, section __DLIB_PERTHREAD, block DATA_SECTION };
+
+/*
+The _tx_initialize_low_level function inside of tx_initialize_low_level.s also determines 
+the first available address for use by the application, which is supplied as the sole 
+input parameter to your application definition function, tx_application_define. 
+To accomplish this, a section is created in tx_initialize_low_level.s called FREE_MEM.
+
+!!!! Note:  
+This section  must be located after all other RAM sections in memory.
+*/
+place in APP_RAM_region { block FREE_MEM };
+

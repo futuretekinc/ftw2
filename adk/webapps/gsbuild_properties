@@ -1,0 +1,31 @@
+
+	<!-- PROVIDE THE PATH WHERE YOU INSTALLED Closure Compiler -->
+	<property name="ClosureCompiler.dir" value="C:/closure-compiler" />
+	<property name="csstidy.dir" value="C:/csstidy" />
+	
+	<!-- Properties pertaining to input directories -->
+	<property name="webroot.dir" value="WebContent" />
+	<property name="js.dir" value="${webroot.dir}/jsin" />
+
+	<property name="css.dir" value="${webroot.dir}/cssin" />
+
+
+
+	<!-- Properties pertaining to output files and directories -->
+	<property name="js.out.dir" value="${webroot.dir}/js" />
+	<property name="css.out.dir" value="${webroot.dir}/css" />
+	<property name="js_outfile" value="${js.out.dir}/gs.min.js" />
+	<property name="js.outfile" value="${js.out.dir}/gs.min.js" />
+	<property name="js.outfile.client" value="${js.out.dir}/gsclient.min.js" />
+	<property name="js.outfile.ap" value="${js.out.dir}/gsap.min.js" />
+	<property name="output.gzip.dir" value="output" />
+	<property name="op.js.dir" value="${output.gzip.dir}/js"/>
+	<property name="op.css.dir" value="${output.gzip.dir}/css" />
+
+
+	<property name="concat.js.file" value="${js.out.dir}/gs.combined.js" />
+	<property name="concat.js.file.client" value="${js.out.dir}/gsclient.combined.js" />
+
+	<property name="final.dist.dir" value="gsprov" />
+	<property name="final.dir.gsprov.client" value="gsprov_client" />
+	<property name="final.dir.gsprov.pro" value="gsprov_pro" />

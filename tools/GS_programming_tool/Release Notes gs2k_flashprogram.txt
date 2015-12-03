@@ -1,0 +1,160 @@
+                               GainSpan Corporation
+
+Title:    Release Notes
+Product:  GS2K_Flashprogram Plus
+Version:  1.2.4 Beta
+Date:     Octt 2014
+
+
+
+-----------------------------------------------------------------------------
+          RELEASE NOTES 1.2.4 Beta
+-----------------------------------------------------------------------------
+
+Release Notes are for current release only with sections for new features
+modifications and limitations:
+
+   
+
+  New Features (Since last release 1.2.2)
+  ------------
+   * supports programming through TotalPhase Cheetah SPI adapter
+   * allows programming of different binaries to multiple locations
+
+  Modifications (since last release 1.2.2)
+  -------------
+    * enhanced module detection
+  
+  Limitations
+  ------------
+   * Reading through SPI needs fixes
+   * Supports Modules rev 3.1 and above
+
+
+
+-----------------------------------------------------------------------------
+          RELEASE NOTES 1.2.2
+-----------------------------------------------------------------------------
+
+Release Notes are for current release only with sections for new features
+modifications and limitations:
+
+   
+
+  New Features (Since last release 1.2.0)
+  ------------
+   
+
+  Modifications (since last release 1.2.0)
+  -------------
+   * the captions on the Erase and Program buttons
+   
+  Limitations
+  ------------
+   * Only UART interface is supported
+   * Supports Modules rev 3.1 and above
+
+
+-----------------------------------------------------------------------------
+          RELEASE NOTES 1.2
+-----------------------------------------------------------------------------
+
+Release Notes are for current release only with sections for new features
+modifications and limitations:
+
+   
+
+  New Features (Since last release 1.1.3)
+  ------------
+   * Options to program single image or multiple images
+   * Options to program at 921600 Baudrate
+   
+
+  Modifications (since last release 1.1.3)
+  -------------
+   * Includes the gs_flashprogram ver 1.53 that supports the new flash structure, supports programming at 921600 Baudrate, can program multiple copies, 
+     handle REV number for each copy and do a full erase with Erase Check
+   * Setup and Program window is merged into a single window.
+   
+  Limitations
+  ------------
+   * Only UART interface is supported
+   * Supports Modules rev 3.1 and above
+   
+
+-----------------------------------------------------------------------------
+          RELEASE NOTES 1.1.3 Beta
+-----------------------------------------------------------------------------
+
+Release Notes are for current release only with sections for new features
+modifications and limitations:
+
+   
+
+  New Features (Since last release 1.1.2)
+  ------------
+      
+
+  Modifications (since last release 1.1.2)
+  -------------
+   * Includes the gs_flashprogram ver 1.31 that handles the REV number
+   
+  Limitations
+  ------------
+   * Only UART interface is supported
+   
+   
+-----------------------------------------------------------------------------
+          RELEASE NOTES 1.1.2 Beta
+-----------------------------------------------------------------------------
+
+Release Notes are for current release only with sections for new features
+modifications and limitations:
+
+   
+
+  New Features (Since last release 1.1.0)
+  ------------
+   * Compatible with B0, C1 and D1 based designs/modules
+   
+
+  Modifications (since last release 1.1.0)
+  -------------
+   * Added support for D1 based modules i.e version 3.1 or later
+   * Includes the gs_flashprogram ver 1.3 that fixes the REV number bug.
+   
+  Limitations
+  ------------
+   * Only UART interface is supported
+
+
+-----------------------------------------------------------------------------
+          RELEASE NOTES 1.1.0
+-----------------------------------------------------------------------------
+
+Release Notes are for current release only with sections for new features
+modifications and limitations:
+
+   
+
+  New Features (Since last release 1.0.4)
+  ------------
+   * Compatible with both 2.x (B0) and 3.x (C1) based modules
+   * Uses the gs_flashprogram ver 1.2 which extracts the Controlblock information from the Superblock
+   
+
+  Modifications (since last release 1.0.4)
+  -------------
+   * Added selections for 2.x and 3.x Modules
+   
+  Limitations
+  ------------
+   * Only UART interface is supported
+   
+
+GainSpan Corporation
+3590 N. First Street
+Suite 300
+San Jose, CA 95134
+Tel: +1 (408) 627-6500
+Info@GainSpan.com

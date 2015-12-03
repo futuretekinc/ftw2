@@ -1,0 +1,13 @@
+; GS2000 (Cortex-M3 + Cortex-M0)
+
+; Emulator TDI
+
+;@@Title@@: Gainspan
+
+
+"GS"    BYPASS05   "System JTAG Controller"
+"M3_APP"  "Cortex-M3:0"
+"M3_WLAN"   "Cortex-M3:0"
+
+
+; End of file

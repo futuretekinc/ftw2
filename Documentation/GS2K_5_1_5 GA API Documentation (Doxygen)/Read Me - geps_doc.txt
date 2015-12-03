@@ -1,0 +1,1 @@
+Unzip the file and then click on the Index.html file to open the API documentation.

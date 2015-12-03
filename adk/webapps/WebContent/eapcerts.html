@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<meta http-equiv="Cache-control" content="no-cache" />
+<meta http-equiv="Expires" content="-1" />
+<meta http-equiv="Pragma" content="no-cache" />
+<title>Certificate Upload</title>
+<link rel="stylesheet" href="css/styles.css" type="text/css" />
+<script type="text/javascript" src="js/gs.min.js"></script>
+<script type="text/javascript">
+
+	
+    OnReady(function(){
+   		populateDeleteCertSection();
+    });
+    
+    function populateDeleteCertSection(){
+    	var ddCerts = document.getElementById("wpacerts");
+    	clearNode(ddCerts);
+    	var certXhr =initializeXhr();  
+    	ajaxCall(
+    			certXhr,
+    			AJAX_METHOD_GET,
+    			GS_SSLCERTS_API,
+    			null,
+    			function() {
+    				var respXml = parseResponse(certXhr.responseXml,
+    						certXhr.responseText);
+    				var existingCerts = respXml.getElementsByTagName('name');
+    				
+    				
+    				for(var i=0, j=0;i<existingCerts.length;i++){
+    					var certName = existingCerts[i].firstChild.nodeValue;
+    					if(isWpaCert(certName)){
+    						addDropDownItem(ddCerts, j, j, certName, j==0?true:false);
+    						j++;
+        				}
+    				}
+    			});
+    	
+    }
+    
+    function isWpaCert(certName){
+    	return certName.lastIndexOf('TLS', 0) === 0;
+    }
+
+    function deleteSelectedCert(){
+    	var ddCerts = document.getElementById("wpacerts");
+    	var selected = ddCerts.options[ddCerts.selectedIndex].text;
+    	ajaxCall(
+    			initializeXhr(),
+    			AJAX_METHOD_POST,
+    			GS_SSLCERTS_API+"/"+selected,
+    			null,
+    			function() {
+    				populateDeleteCertSection();
+    			});
+    }
+    
+</script>
+</head>
+
+<body>
+	<!--[if lte IE 7]>
+		<div id="IEroot">
+		<![endif]-->
+	<div class="global">
+		<div class="logo">
+			<img src="logo.gif" alt="GainSpan" />
+		</div>
+		<div id="pghead"><h1 class="pghead">Certificate Upload</h1></div>
+		<div class="section" id="divform">
+		<form name="certpost" method="post" action="/gainspan/system/wpacertupload" enctype="multipart/form-data">
+			<div>Please upload certificates in DER format only.</div>
+			<div>
+				<label class="lbl">CA Root Certificate:</label>
+				<input type="file" class="fld" name="TLS_CA" />
+				<br class="clr" />
+			</div>
+			<div>
+				<label class="lbl">Client Certificate:</label>
+				<input type="file" class="fld" name="TLS_CLIENT"/>
+				<br class="clr" />
+			</div>
+			<div>
+				<label class="lbl">Client Key:</label>
+				<input type="file" class="fld" name="TLS_KEY"/>
+				<br class="clr" />
+			</div>
+			<div><input type="submit" value="Upload" /></div>
+		</form>
+		</div>
+		<hr/>
+		<div><label class="wizhead" for="">EAP Certificate List</label></div>
+		<div><label class="note" for="">This is the list of EAP certificates you have already uploaded. You can delete them individually using the button below</label></div>
+		<div class="section" id="divdelete">
+			<div><select id="wpacerts"></select></div>
+			<div><input type="submit" value="Delete" id="btnDelete" onclick="deleteSelectedCert();"/></div>
+		</div>
+	</div>
+	<!--[if lte IE 7]>
+		</div>
+		<![endif]-->
+</body>
+</html>

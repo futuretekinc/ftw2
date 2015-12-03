@@ -1,0 +1,289 @@
+                               GainSpan Corporation
+
+Title:    Release Notes
+Product:  Embedded TLS ADK Application
+Version:  5.1.5.1
+Date:     2015 APRIL 1
+
+RELEASE NOTE HISTORY
+--------------------
+  RELEASE 5.1.5.1
+  ---------------
+  
+  Enhancements 
+  ------------
+   * None
+   
+  Modifications 
+  --------------
+  * Compatible with 5_1_5 GA 
+  * Random number generation
+
+
+  Bug Fixes
+  ---------
+   * NCM reconnect from standby fails in WPA 2 security as MAC address is not stored.
+   * NAK to DHCP Request. 
+
+     
+  Limitations
+  -----------
+   * None
+ 
+  Known Issues
+  ------------
+   * None
+   
+   
+   
+
+RELEASE 5.1.2.3
+  -----------------------------
+  
+  Enhancements 
+  ------------
+   * None
+   
+  Modifications 
+  --------------
+   * ADC temp sensor context is maintained in App_mainthread.c
+   * Multicast is explicitly made on in WDD context from app main thread.c, so 
+	 that multicast will be ON even after MDNS is resolved in GEPS
+
+  Bug Fixes
+  ---------
+   * None
+     
+  Limitations
+  -----------
+   * None
+ 
+  Known Issues
+  ------------
+
+
+
+RELEASE 5.1.2.2
+  -----------------------------
+  
+  Enhancements 
+  ------------
+   * None
+   
+  Modifications 
+  --------------
+   * None
+
+  Bug Fixes
+  ---------
+   * None
+     
+  Limitations
+  -----------
+   * None
+ 
+  Known Issues
+  ------------
+
+
+
+RELEASE 5.1.2.1
+  -----------------------------
+  
+  Enhancements 
+  ------------
+   * None
+   
+  Modifications 
+  --------------
+   * For 5.2.1 GA release compatible 
+   * added wlan version print.
+
+  Bug Fixes
+  ---------
+   * None
+     
+  Limitations
+  -----------
+   * None
+ 
+  Known Issues
+  ------------
+
+
+
+RELEASE 5.1.1.2
+  -----------------------------  
+  Enhancements 
+  ------------
+   * None
+
+   
+  Modifications 
+  --------------
+   * None
+
+  Bug Fixes
+  ---------
+   * None
+     
+  Limitations
+  -----------
+   * None
+ 
+  Known Issues
+  ------------
+ 
+
+
+
+RELEASE 5.1.1.1
+  -----------------------------
+  
+  Enhancements 
+  ------------
+   * None
+
+   
+  Modifications 
+  --------------
+   * None
+
+  Bug Fixes
+  ---------
+   * None
+     
+  Limitations
+  -----------
+   * None
+ 
+  Known Issues
+  ------------
+ 
+ 
+ 
+ 
+ RELEASE 5.1.0.4
+  -----------------------------
+  
+  Enhancements 
+  ------------
+   * None
+
+   
+  Modifications 
+  --------------
+   * Modifications related to BrownOut and Initialization sequence change to make compatible with GA release. 
+   * Added RF calibration data at boot.
+
+  Bug Fixes
+  ---------
+   * None
+     
+  Limitations
+  -----------
+   * None
+ 
+  Known Issues
+  ------------
+
+
+
+  RELEASE 5.1.0.3
+  -----------------------------
+  
+  Enhancements 
+  ------------
+   * None
+
+   
+  Modifications 
+  --------------
+   * Modifications to make compatible with GA release. 
+
+  Bug Fixes
+  ---------
+   * None
+     
+  Limitations
+  -----------
+   * None
+ 
+  Known Issues
+  ------------
+  
+  
+  
+  RELEASE 5.1.0.2
+  -----------------------------
+  
+  Enhancements 
+  ------------
+   * WPS via physical button is now supported. Previous this was
+     not working using the actual WPS button on EVB 
+
+   
+  Modifications 
+  --------------
+   * Modifications to make compatible with WLAN/GEPS changes 
+
+  Bug Fixes
+  ---------
+   * rectified the light(lux) reading value.
+     
+  Limitations
+  -----------
+   * None
+ 
+  Known Issues
+  ------------
+   
+   
+   
+  RELEASE 5.1.2
+  -----------------------------
+  
+  Enhancements 
+  ------------
+   * WPS functionality is supported as a hardware button.
+
+  Modifications 
+  --------------
+   * None
+
+  Bug Fixes
+  ---------
+   * None
+     
+  Limitations
+  -----------
+   * None
+ 
+  Known Issues
+  ------------
+   * Tested the WPS button functionality with Restore button since the WPS(GPIO 10) does not work on EVB
+   
+
+
+  RELEASE 5.0.10
+  -----------------------------
+  
+  Enhancements 
+  ------------
+   * None
+
+  Modifications 
+  --------------
+   * None
+
+  Bug Fixes
+  ---------
+   * None
+     
+  Limitations
+  -----------
+   * WPS functionality is supported only as soft button from provisioning webpage.
+ 
+  Known Issues
+  ------------
+   * None

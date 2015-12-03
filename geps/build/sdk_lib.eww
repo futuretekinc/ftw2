@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<workspace>
+  <project>
+    <path>$WS_DIR$\..\..\adk\otafu\build\iar\otafu.ewp</path>
+  </project>
+  <project>
+    <path>$WS_DIR$\..\..\adk\provisioning\build\iar\web_prov.ewp</path>
+  </project>
+  <batchBuild>
+    <batchDefinition>
+      <name>sdk_lib</name>
+      <member>
+        <project>otafu</project>
+        <configuration>Debug</configuration>
+      </member>
+      <member>
+        <project>web_prov</project>
+        <configuration>Debug</configuration>
+      </member>
+    </batchDefinition>
+  </batchBuild>
+</workspace>
+
+

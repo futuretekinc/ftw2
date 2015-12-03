@@ -1,0 +1,514 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<meta http-equiv="Cache-control" content="no-cache" />
+<meta http-equiv="Expires" content="-1" />
+<meta http-equiv="Pragma" content="no-cache" />
+<title>Gainspan Smartplug</title>
+<link rel="stylesheet" href="css/styles.css" type="text/css" />
+<script>
+	var state;
+	var timeOutValue = 5 * 1000;
+	var timeOutId = "";
+	/*
+	 * Helper method to create a most suitable Microsoft XML DOMDocument
+	 * Used for IE
+	 */
+	function createMsXmlDoc() {
+		if (typeof (ActiveXObject) != "undefined") {
+			var progIDs = [ "Msxml2.DOMDocument.6.0", "Msxml2.DOMDocument.3.0",
+					"MSXML2.DOMDocument", "MSXML.DOMDocument" ];
+			for ( var i = 0; i < progIDs.length; i++) {
+				try {
+					return new ActiveXObject(progIDs[i]);
+				} catch (e) {
+				}
+				;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * 
+	 * @param rootName
+	 *            The name of the XML root element
+	 * @returns A cross-browser XML document object with the specified root.
+	 */
+	function createXmlDoc(rootName) {
+		if (!rootName) {
+			rootName = "";
+		}
+
+		/*
+		 * First, try creating MS DOMDocument.
+		 */
+		var xmlDoc = createMsXmlDoc();
+		if (xmlDoc) {
+			if (rootName) {
+				var rootNode = xmlDoc.createElement(rootName);
+				xmlDoc.appendChild(rootNode);
+			}
+		}
+
+		/*
+		 * If unsuccessful, then it is non-IE browser. Use standard DOM API to
+		 * create the document.
+		 */
+		else {
+			if (document.implementation.createDocument) {
+				xmlDoc = document.implementation.createDocument("", rootName,
+						null);
+			}
+		}
+
+		return xmlDoc;
+	}
+
+	/*
+	 * Helper function that takes a node as argument, 
+	 * and returns the content of the child node which has the specified tag.
+	 * 
+	 *  If there are multiple children with the specified tag, 
+	 *  then the content of the first such tag is returned.
+	 */
+	function getTagContent(node, tagName) {
+		var tagElems = node.getElementsByTagName(tagName);
+		if (tagElems && tagElems.length > 0 && tagElems[0].firstChild) {
+			return tagElems[0].firstChild.nodeValue;
+		} else {
+			return '';
+		}
+	}
+
+	/*
+	 * Helper function to create a child XML element with text content,
+	 * And append it to the specified parent.
+	 */
+	function appendXmlElement(postXml, parent, name, content) {
+
+		var elem = postXml.createElement(name);
+		elem.appendChild(postXml.createTextNode(content));
+		parent.appendChild(elem);
+
+	}
+
+	/*
+	 * Helper function to parse the response of XMLHttpRequest. Ideally, the
+	 * responseXml property should hold the desired result. But this is not
+	 * cross-browser.
+	 * 
+	 * Hence, this function is used. It checks if the responseXml is valid, else
+	 * builds it from responseText property.
+	 */
+	function parseResponse(respXml, respTxt) {
+		var xmlDoc = respXml;
+
+		/*
+		 * if responseXML is not valid, try to create the XML document from the
+		 * responseText property
+		 */
+		if (!xmlDoc || !xmlDoc.documentElement) {
+			if (window.DOMParser) {
+				var parser = new DOMParser();
+				try {
+					xmlDoc = parser.parseFromString(respTxt, "text/xml");
+				} catch (e) {
+					alert("XML parsing error");
+					return null;
+				}
+				;
+			} else {
+				xmlDoc = createMsXmlDoc();
+				if (!xmlDoc) {
+					return null;
+				}
+				xmlDoc.loadXML(respTxt);
+
+			}
+		}
+		return xmlDoc;
+	}
+
+	function newAjaxRequest() {
+		var xhr = false;
+		try {
+			xhr = new XMLHttpRequest();
+		} catch (trymicrosoft) {
+			try {
+				xhr = new ActiveXObject("Msxml2.XMLHTTP.3.0");
+			} catch (othermicrosoft) {
+				try {
+					xhr = new ActiveXObject("Microsoft.XMLHTTP");
+				} catch (failed) {
+					xhr = false;
+				}
+			}
+		}
+
+		if (!xhr)
+			alert("Error initializing XMLHttpRequest!");
+
+		return xhr;
+	}
+
+	// Send a POST request asynchronously
+	function execPOST(url, postData, callback) {
+		var postRequest = newAjaxRequest();
+		// Register an event listener for change in state of the HTTP conversation
+		postRequest.onreadystatechange = function() {
+			if (postRequest.readyState == 4) {
+				// State 4: completed receiving the HTTP response. Now parse it.
+				if (postRequest.error) {
+					callback(1, "Request had an error.");
+					alert('postRequest Error');
+				} else {
+					var status;
+					try {
+						// sometimes reading the status raises an exception.
+						// see: http://helpful.knobs-dials.com/index.php/"Component_returned_failure_code:_0x80040111_(NS_ERROR_NOT_AVAILABLE)"#0x80040111_.28NS_ERROR_NOT_AVAILABLE.29
+						status = postRequest.status;
+					} catch (err) {
+						callback(1, "Failed to get HTTP status from server.");
+						return;
+					}
+					if (status == 200 || status == 0) {
+						// we often get a status of 0 when we access file:// urls
+						callback(0, postRequest.responseText);
+					} else {
+						callback(1, "POST: Unexpected HTTP Status: "
+								+ postRequest.status);
+						alert('POST: Unexpected HTTP Status: '
+								+ postRequest.status);
+					}
+				}
+			}
+		}
+		if (postRequest.overrideMimeType) {
+			postRequest.overrideMimeType("text/xml");
+		}
+		postRequest.open("POST", url  + '?t=' + new Date().getTime(), true);
+		postRequest.send(postData);
+		return postRequest;
+	}
+
+	// Call a GET on a URI asynchronously
+	function execGET(url, callback) {
+		var getRequest = newAjaxRequest();
+		// Register an event listener for change in state of the HTTP conversation
+		getRequest.onreadystatechange = function() {
+			if (getRequest.readyState == 4) {
+				// State 4: completed receiving the HTTP response. Now parse it.
+				if (getRequest.error) {
+					callback(1, "Request had an error.");
+				} else {
+					var status;
+					try {
+						// sometimes reading the status raises an exception.
+						// see: http://helpful.knobs-dials.com/index.php/"Component_returned_failure_code:_0x80040111_(NS_ERROR_NOT_AVAILABLE)"#0x80040111_.28NS_ERROR_NOT_AVAILABLE.29
+						status = getRequest.status;
+					} catch (err) {
+						callback(1, "Failed to get HTTP status from server.");
+						return;
+					}
+					if (status == 200 || status == 0) {
+						// we often get a status of 0 when we access file:// urls
+						callback(0, getRequest.responseXml,
+								getRequest.responseText);
+					} else {
+						callback(1, "GET: Unexpected HTTP Status: "
+								+ getRequest.status);
+					}
+				}
+			}
+		}
+		if (getRequest.overrideMimeType) {
+			getRequest.overrideMimeType("text/xml");
+		}
+		getRequest.open("GET", url  + '?t=' + new Date().getTime(), true);
+		getRequest.send(null);
+		return getRequest;
+	}
+	function getEle(fsName) {
+		return document.getElementById(fsName);
+	}
+
+	/**
+	 * Helper function to make a block element visible.
+	 * 
+	 * @param node The node to be made block visible.
+	 */
+	function unHide (node){
+		node.style.display = 'block';
+	}
+	
+
+	function recvSmartplug(status, respXml, respTxt) {
+
+		var spXml = parseResponse(respXml, respTxt);
+
+		var spRoot = spXml.getElementsByTagName('smartplug');
+		if (spRoot && spRoot.length > 0) {
+			getEle('apiver').innerHTML = getTagContent(spRoot[0], 'version');
+			var pm = spRoot[0].getElementsByTagName('pm');
+			if (pm && pm.length > 0) {
+				var voltage = getTagContent(pm[0], 'volts');
+				var current = getTagContent(pm[0], 'current');
+				var power = getTagContent(pm[0], 'power');
+				var powerfactor = getTagContent(pm[0], 'power_factor');
+				var energy = getTagContent(pm[0], 'energy');
+				var frequency = getTagContent(pm[0], 'freq');
+
+				getEle('voltage').innerHTML = (voltage != null && voltage != "" && voltage != -1) ? voltage
+						: "NA";
+				getEle('current').innerHTML = (current != null && current != "" && current != -1) ? current
+						: "NA";
+				
+				if(power != null && power != "" && power != -1){
+					unHide(document.getElementById('powerDivId'));
+					getEle('power').innerHTML = power;
+				} else {
+					hide(document.getElementById('powerDivId'));
+				}
+				
+				
+				if(powerfactor != null && powerfactor != "" && powerfactor != -1){
+					unHide(document.getElementById('powerFactorDivId'));
+					getEle('powerfactor').innerHTML = powerfactor;
+					
+				} else {
+					hide(document.getElementById('powerFactorDivId'));
+				}
+				getEle('frequency').innerHTML = (frequency != null
+						&& frequency != "" && frequency != -1) ? frequency
+						: "NA";
+
+				if (energy != null && energy != "" && energy != -1) {
+					unHide(document.getElementById('energyDivId'));
+					getEle('energy').innerHTML = energy;
+				} else {
+					hide(document.getElementById('energyDivId'));
+
+				}
+
+			}
+
+			var type = getTagContent(spRoot[0], 'type');
+
+			if (type != null && type != "") {
+				unHide(document.getElementById('modelDivId'));
+				getEle('modelId').innerHTML = type;
+			} else {
+				hide(document.getElementById('modelDivId'));
+			}
+
+			var load = spRoot[0].getElementsByTagName('load');
+			if (load != null && load != -1 && load != "") {
+				state = getTagContent(load[0], 'state').toUpperCase()
+				updateLoadButton(state);
+			}
+			else {
+				getEle('load').innerHTML = "NA";	
+			}
+
+			var curTime, hr, ms, sec, suf;
+			curTime = new Date();
+			hr = curTime.getHours();
+			suf = ((hr > 11) ? ' PM' : ' AM');
+			hr = ((hr > 11) ? (hr - 12) : hr);
+			hr = (hr == 0) ? '12' : hr;
+			ms = curTime.getMinutes();
+			sec = curTime.getSeconds();
+			getEle("curTime").innerHTML = hr + ':'
+					+ ((ms > 9) ? ms : ('0' + ms)) + ':'
+					+ ((sec > 9) ? sec : ('0' + sec)) + suf;
+		}
+
+	}
+
+	/**
+	 * Helper function to hide an element. Works for both block and inline elements.
+	 * 
+	 * @param node The node to be hidden
+	 */
+	function hide(node) {
+		node.style.display = 'none';
+	}
+
+	function updateLoadButton(state) {
+		//alert('updateLoadButton called: state = '+state);
+		getEle('load').innerHTML = state;
+		var btnSwitch = getEle('btnSwitch');
+		if (state == 'ON' || state == 'on') {
+			btnSwitch.value = 'Switch OFF';
+		} else {
+			btnSwitch.value = 'Switch ON';
+		}
+	}
+
+	function updateTimeOut() {
+		var newTimeOut = parseInt(getDropDownItemSelected());
+
+		if (newTimeOut >= 1 && newTimeOut <= 60) {
+			clearTimeout(timeOutId);
+			timeOutValue = newTimeOut * 1000;
+			timeOutId = setTimeout('updateSmartplug(1)', timeOutValue);
+			return true;
+		} else {
+			alert("Please enter the Valid Time Out between 1 and 60.");
+			return false;
+		}
+	}
+
+	function getDropDownItemSelected() {
+		var drop = document.getElementById('selRefresh');
+		return drop.options[drop.selectedIndex].value;
+	}
+
+	function getContentOfId(id) {
+		return document.getElementById(id).value;
+	}
+
+	function populateDropDown(min, max) {
+		var drop = document.getElementById('selRefresh');
+
+		var defaultTimeout = timeOutValue / 1000;
+		for ( var i = min, index = 0; i <= max; i++, index++) {
+			drop.options[index] = new Option(i, i, false);
+		}
+
+		drop.value = defaultTimeout;
+	}
+
+	function initialize() {
+		populateDropDown(1, 60);
+		updateSmartplug(true);
+	}
+
+	function updateSmartplug(refresh) {
+		var lsResult = execGET('/gainspan/profile/smartplug', recvSmartplug);
+
+		if (refresh == 1) {
+			timeOutId = setTimeout('updateSmartplug(1)', timeOutValue);
+		}
+	}
+
+	function resetEnergy() {
+		var postXml = createXmlDoc('smartplug');
+		var pm = postXml.createElement('pm');
+		postXml.documentElement.appendChild(pm);
+
+		var energy = 0;
+		appendXmlElement(postXml, pm, 'energy', energy);
+		execPOST('/gainspan/profile/smartplug', postXml, function() {
+
+		});
+
+	}
+
+	function postLoadChange() {
+		var postXml = createXmlDoc('smartplug');
+		var load = postXml.createElement('load');
+		postXml.documentElement.appendChild(load);
+
+		var stateToSet = '';
+		if (state == 'ON' || state == 'on') {
+			stateToSet = 'off';
+			state = 'OFF'
+		} else {
+			stateToSet = 'on';
+			state = 'ON'
+		}
+		appendXmlElement(postXml, load, 'state', stateToSet);
+		execPOST('/gainspan/profile/smartplug', postXml, function() {
+			updateLoadButton(state);
+		});
+
+	}
+</script>
+</head>
+<body onload="initialize();">
+	<div class="global">
+		<div class="logo">
+			<img src="logo.gif" alt="GainSpan" />
+		</div>
+		<div id="pghead">
+			<h1 class="pghead">Gainspan Smartplug Web Application</h1>
+		</div>
+		<div id="landing" class="section"></div>
+		<hr>
+		<div align="center">
+			<b>Load is </b> : <span id="load" class="sumval">ON</span>
+		</div>
+
+		<div align="center">
+			<input type="button" value="Switch OFF" onclick="postLoadChange()"
+				id="btnSwitch" />
+		</div>
+		<br class="clear" />
+		<div align="center">
+			<b>Voltage </b> : <span id="voltage" style="padding-left: 20px;" class="sumval"></span> Volts <br
+				class="clear" />
+		</div>
+		<div align="center">
+			<b>Current</b> : <span id="current" style="padding-left: 20px;" class="sumval"></span> Amps <br
+				class="clear" />
+		</div>
+		<div align="center" id="powerDivId">
+			<b>Power</b>: <span id="power" class="sumval"  style="padding-left: 20px;"></span> Watt <br
+				class="clear" />
+		</div>
+		<div align="center">
+			<b>Frequency</b>: <span id="frequency" class="sumval"  style="padding-left: 20px;" ></span> hertz<br
+				class="clear" />
+		</div>
+		<div align="center">
+			<div id="powerFactorDivId">
+			<b>Power Factor</b>: <span id="powerfactor"  style="padding-left: 20px;" class="sumval"></span>  <br
+				class="clear" />
+			</div>
+		</div>
+
+		<div align="center">
+			<div id="energyDivId">
+				<b>Energy</b>: <span id="energy" class="sumval"  style="padding-left: 20px;"></span>Kwh 
+				<input type="button"  value="Reset" onclick="resetEnergy()">	
+				<br
+					class="clear" />
+			</div>
+
+
+			<div align="center">
+				<small>Updated at <span id="curTime"></span>
+				</small>
+			</div>
+		</div>
+		<p />
+
+		<div align="center">
+			<input type="button" value="Refresh" onclick="updateSmartplug(0)" />
+		</div>
+		<p />
+		<div align="center">
+			<b>Refresh Interval </b> <select id="selRefresh">
+			</select> <b> seconds.</b> <input type="submit" value="Set"
+				onClick='updateTimeOut()' />
+		</div>
+		<p />
+		<hr />
+		<div align="center">
+			<div>
+				<small>Smartplug Web-app Version: <span class="bold">0.7.5</span></small>
+			</div>
+			<div>
+				<small>Smartplug API Version: <span class="bold" id="apiver"></span></small>
+			</div>
+			<div id="modelDivId">
+				<small>Smartplug Model: <span class="bold" id="modelId"></span></small>
+			</div>
+		</div>
+
+	</div>
+</body>
+</html>
+

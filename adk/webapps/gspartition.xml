@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="gspartition" basedir="." default="generate-source-partition-all">
+	<property name="gs.propertyfile" value="gspartition.properties"/>
+
+
+	<property file="${gs.propertyfile}">
+	</property>
+
+	<target name="generate-source-partition-all">
+		<antcall target="generate-tls-source-partition">
+		</antcall>
+		<antcall target="generate-s2w-source-partition">
+		</antcall>
+	</target>
+
+	<target name="copy-common-build-files">
+		<copy todir="${target.dir}">
+			<fileset
+				dir="${gainspan.input.webroot}"
+				includes="${gainspan.buildfile.common}, gsbuild_properties, .classpath, .project, .externalToolBuilders/*"
+			/>
+		</copy>
+	</target>
+
+	<target name="generate-tls-source-partition">
+		<!-- antcall target="gspartition-clean-tls" / -->
+		<mkdir dir="${gainspan.partition.output.tls}/all"/>
+		<copy todir="${gainspan.partition.output.tls}/all" includeemptydirs="true">
+			<fileset 
+				dir="${gainspan.input.webroot}/WebContent"
+				includes="**/css/styles.css, 
+							**/jsin/*.js, 
+							gs*.html, 
+							index*.html, 
+							tlsconf.html,
+							img/*
+						"
+			/>
+		</copy>
+
+		<antcall target="copy-common-build-files">
+			<param name="target.dir" value="${gainspan.partition.output.tls}"/>
+		</antcall>
+		<copy todir="${gainspan.partition.output.tls}">
+			<fileset
+				dir="${gainspan.input.webroot}"
+				includes="${gainspan.tls.buildfile}"
+			/>
+		</copy>
+		<move 
+			file="${gainspan.partition.output.tls}/${gainspan.tls.buildfile}" 
+			tofile="${gainspan.partition.output.tls}/build.xml"
+		/>
+	</target>
+
+	<target name="generate-s2w-source-partition">
+		<mkdir dir="${gainspan.partition.output.s2w}/all"/>
+		<copy todir="${gainspan.partition.output.s2w}/all" includeemptydirs="true">
+			<fileset 
+						dir="${gainspan.input.webroot}/WebContent"
+						includes="**/css/styles.css, 
+									**/jsin/*.js, 
+									gs*.html, 
+									img/*
+								"
+						excludes="**/jsin/tlsconf.js"
+					/>
+		</copy>
+		<antcall target="copy-common-build-files">
+			<param name="target.dir" value="${gainspan.partition.output.s2w}"/>
+		</antcall>
+		<copy todir="${gainspan.partition.output.s2w}">
+			<fileset
+				dir="${gainspan.input.webroot}"
+				includes="${gainspan.s2w.buildfile}"
+			/>
+		</copy>
+		
+		<move file="${gainspan.partition.output.s2w}/${gainspan.s2w.buildfile}" 
+			tofile="${gainspan.partition.output.s2w}/build.xml"
+		/>
+	
+	</target>
+
+	<target name="check-gainspan-output-s2w-dir">
+		<available file="${gainspan.partition.output.s2w}" type="dir" property="gainspan.output.s2w.dir.exists" value="true" />
+	</target>
+
+	<target name="check-gainspan-output-tls-dir">
+		<available file="${gainspan.partition.output.tls}" type="dir" property="gainspan.output.tls.dir.exists" value="true" />
+	</target>
+
+	<target name="gspartition-clean-s2w" depends="check-gainspan-output-s2w-dir" if="gainspan.output.s2w.dir.exists">
+		<delete includeEmptyDirs="true">
+			<fileset dir="${gainspan.partition.output.s2w}"/>
+		</delete>
+	</target>
+
+	<target name="gspartition-clean-tls" depends="check-gainspan-output-tls-dir" if="gainspan.output.tls.dir.exists">
+		<delete includeEmptyDirs="true">
+			<fileset dir="${gainspan.partition.output.tls}"/>
+		</delete>
+	</target>
+
+</project>

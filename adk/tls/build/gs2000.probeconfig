@@ -1,0 +1,8 @@
+; Multi Cortex-M3 configuration
+
+"JTAG_TEST"   BYPASS05
+"M3_WLAN"  "Cortex-M3:0"
+"M3_APP"  "Cortex-M3:0"
+
+; End of file
+

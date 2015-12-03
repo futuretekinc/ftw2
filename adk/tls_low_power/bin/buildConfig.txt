@@ -1,0 +1,13 @@
+##########################################################################
+# Product Name : GS2011 MIZ/MIE v3.3 or later    Software Release Version : GEPS v5.1.5 GA
+##########################################################################
+# Internal Flash  = 4MB
+# External Flash  = None
+# Application = TLS Low Power AEK (Hostless, Web/CoAp Client)
+# Build Output  = SDK Package
+# Wi-Fi Mode = Wi-Fi Station|Wi-Fi (Limited) AP
+# Core Network Services = IPv4
+# CNSIPv4 = Discovery mDNS,DNS-SD|HTTP 1.1 Client|HTTP 1.1 Server|IGMP (Multicast) Support|CoAP Client
+# IoT/Server Connectivity = UDP Server/Listener
+# Build Configuration Id = 9686
+##########################################################################

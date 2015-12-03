@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE project [
+       <!ENTITY gsprops SYSTEM "gsbuild_properties">
+]>
+
+<project xmlns:ac="antlib:net.sf.antcontrib" default="gsbuild-all">
+
+	<taskdef resource="net/sf/antcontrib/antlib.xml" />
+
+	&gsprops;
+
+	<property name="final.dir.gsprov.ap" value="gsprov_ap" />
+	<property name="final.dir.gsprov.client.ap" value="gsprov_client_ap" />
+
+
+	<target name="gsbuild-all">
+		<ant antfile="gsbuild_common.xml" target="gsbuild-all" />
+		<antcall target="gsbuild-client-ap" />
+		<antcall target="gsbuild-ap" />
+	</target>
+
+	<target name="gsbuild-ap">
+		<echo message="[gsbuild-ap] Started main gsbuild ... "/>
+		<ant antfile="gsbuild_common.xml" target="gsclean" />
+		<ant antfile="gsbuild_common.xml" target="gsconcat" />
+		<antcall target="gs-minify-ap" />
+		<antcall target="gs-gzip-ap" />
+		<antcall target="gs-package-ap" />
+		
+	</target>
+
+	<target name="gsbuild-client-ap">
+		<echo message="[gsbuild-client-ap] Building target gsbuild-pro-tlsconfig" />
+		<ant antfile="gsbuild_common.xml" target="gsclean" />
+		<ant antfile="gsbuild_common.xml" target="gsconcat" />
+		<antcall target="gs-minify-client-ap" />
+		<antcall target="gs-gzip-client-ap" />
+		<antcall target="gs-package-client-ap" />
+		
+	</target>
+
+
+	<target name="gs-minify-ap">
+		<echo message="[gs-minify-ap] Minification in progress"/>
+		<ac:var name="clargs" value=""/>
+		<ac:for param="jsfile">
+			<path>
+				<fileset 
+							dir="${js.dir}" 
+							includes="*.js" 
+							excludes="*.client.js, *.pro.js, tlsconf.js"
+						/>
+			</path>
+			<ac:sequential>
+				<ac:var name="clargs" value="${clargs} --js=&quot;@{jsfile}&quot;" />
+			</ac:sequential>
+		</ac:for>
+		<ac:var name="clargs" value="${clargs} --js_output_file=&quot;${js.outfile}&quot;"/>
+
+		<echo>${clargs}</echo>
+		<java jar="${ClosureCompiler.dir}/compiler.jar" fork="true">
+			<arg line="${clargs}"/>
+		</java>
+	</target>
+
+	<target name="gs-gzip-ap">
+		<echo message="[gs-gzip-ap] GZipping HTML, CSS and Javascript files ... "/>
+		<mkdir dir="${output.gzip.dir}" />
+		<mkdir dir="${op.js.dir}"/>
+		<mkdir dir="${op.css.dir}"/>
+
+		<gzip src="${webroot.dir}/gsap.html" destfile="${output.gzip.dir}/gsap.html.gz" />
+		<gzip src="${webroot.dir}/eapcerts.html" destfile="${output.gzip.dir}/eapcerts.html.gz" />
+		<gzip src="${webroot.dir}/otafu.html" destfile="${output.gzip.dir}/otafu.html.gz" />
+		<gzip src="${js.outfile}" destfile="${op.js.dir}/gs.min.js.gz" />
+		<gzip src="${webroot.dir}/css/styles.css" destfile="${op.css.dir}/styles.css.gz" />
+
+	</target>
+
+	<target name="gs-package-ap">
+		<echo message="[gs-package-ap] Packaging the minified files ... "/>
+		<delete dir="${final.dir.gsprov.ap}" includeemptydirs="true"/>
+		<mkdir dir="${final.dir.gsprov.ap}" />
+		<copy todir="${final.dir.gsprov.ap}">
+			<fileset dir="${output.gzip.dir}" />
+		</copy>
+		<delete dir="${output.gzip.dir}" />
+	</target>
+
+	<target name="gs-minify-client-ap">
+		<echo message="[gs-minify-client-ap] Minification in progress"/>
+		<ac:var name="clargs" value=""/>
+		<ac:for param="jsfile">
+			<path>
+				<fileset 
+					dir="${js.dir}" 
+					includes="*.js"
+					excludes="${js_outfile}, ${js.outfile.ap}, ${js.outfile.client}, *.pro.js, tlsconf.js"
+				/>
+			</path>
+			<ac:sequential>
+				<ac:var name="clargs" value="${clargs} --js=&quot;@{jsfile}&quot;" />
+			</ac:sequential>
+		</ac:for>
+		<ac:var name="clargs" value="${clargs} --js_output_file=&quot;${js_outfile}&quot;"/>
+
+		<echo>${clargs}</echo>
+		<java jar="${ClosureCompiler.dir}/compiler.jar" fork="true">
+			<arg line="${clargs}"/>
+		</java>
+	</target>
+
+	<target name="gs-gzip-client-ap">
+		<echo message="[gs-gzip-client-ap] GZipping HTML, CSS and Javascript files ... "/>
+		<mkdir dir="${output.gzip.dir}" />
+		<mkdir dir="${op.js.dir}"/>
+		<mkdir dir="${op.css.dir}"/>
+
+		<gzip src="${webroot.dir}/gsap.html" destfile="${output.gzip.dir}/gsap.html.gz" />
+		<gzip src="${webroot.dir}/gsclient.html" destfile="${output.gzip.dir}/gsclient.html.gz" />
+		<gzip src="${webroot.dir}/eapcerts.html" destfile="${output.gzip.dir}/eapcerts.html.gz" />
+		<gzip src="${webroot.dir}/otafu.html" destfile="${output.gzip.dir}/otafu.html.gz" />
+		<gzip src="${webroot.dir}/sslcert.html" destfile="${output.gzip.dir}/sslcert.html.gz" />
+		<gzip src="${js_outfile}" destfile="${op.js.dir}/gs.min.js.gz" />
+		<gzip src="${webroot.dir}/css/styles.css" destfile="${op.css.dir}/styles.css.gz" />
+
+	</target>
+
+	<target name="gs-package-client-ap">
+		<echo message="[gs-package-client-ap] Packaging the minified files ... "/>
+		<delete dir="${final.dir.gsprov.client.ap}" includeemptydirs="true"/>
+		<mkdir dir="${final.dir.gsprov.client.ap}" />
+		<copy todir="${final.dir.gsprov.client.ap}">
+			<fileset dir="${output.gzip.dir}" />
+		</copy>
+		<delete dir="${output.gzip.dir}" />
+	</target>
+
+</project>

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE project [
+       <!ENTITY gsprops SYSTEM "gsbuild_properties">
+]>
+
+<project xmlns:ac="antlib:net.sf.antcontrib" default="gsbuild-all">
+
+	<taskdef resource="net/sf/antcontrib/antlib.xml" />
+
+	&gsprops;
+
+	<property name="final.dir.gsprov.client.tlsconfig" value="gsprov_client_tlsconfig" />
+	<property name="final.dir.gsprov.pro.tlsconfig" value="gsprov_pro_tlsconfig" />
+
+
+	<target name="gsbuild-all">
+		<ant antfile="gsbuild_common.xml" target="gsbuild-all" />
+		<antcall target="gsbuild-client-tlsconfig" />
+		<antcall target="gsbuild-pro-tlsconfig" />
+	</target>
+
+
+
+	<target name="gsbuild-pro-tlsconfig">
+		<echo message="[gsbuild-pro-tlsconfig] Building target gsbuild-pro-tlsconfig" />
+		<ant antfile="gsbuild_common.xml" target="gsclean"/>
+		<ant antfile="gsbuild_common.xml" target="gsconcat"/>
+		<antcall target="gs-minify-pro-tlsconfig" />
+		<antcall target="gs-gzip-pro-tlsconfig" />
+		<antcall target="gs-package-pro-tlsconfig" />
+	</target>
+
+	<target name="gsbuild-client-tlsconfig">
+		<echo message="[gsbuild-client-tlsconfig] Building target gsbuild-client-tlsconfig" />
+		<ant antfile="gsbuild_common.xml" target="gsclean"/>
+		<ant antfile="gsbuild_common.xml" target="gsconcat"/>
+		<antcall target="gs-minify-client-tlsconfig" />
+		<antcall target="gs-gzip-client-tlsconfig" />
+		<antcall target="gs-package-client-tlsconfig" />
+	</target>
+
+	<target name="gs-minify-pro-tlsconfig">
+		<echo message="[gs-minify-pro-tlsconfig] Minification in progress"/>
+		<ac:var name="clargs" value=""/>
+		<ac:for param="jsfile">
+			<path>
+				<fileset 
+					dir="${js.dir}" 
+					includes="*.js"
+				/>
+			</path>
+			<ac:sequential>
+				<ac:var name="clargs" value="${clargs} --js=&quot;@{jsfile}&quot;" />
+			</ac:sequential>
+		</ac:for>
+		<ac:var name="clargs" value="${clargs} --js_output_file=&quot;${js_outfile}&quot;"/>
+
+		<echo>${clargs}</echo>
+		<java jar="${ClosureCompiler.dir}/compiler.jar" fork="true">
+			<arg line="${clargs}"/>
+		</java>
+	</target>
+
+	<target name="gs-minify-client-tlsconfig">
+		<echo message="[gs-minify-client-tlsconfig] Minification in progress"/>
+		<ac:var name="clargs" value=""/>
+		<ac:for param="jsfile">
+			<path>
+				<fileset 
+					dir="${js.dir}" 
+					includes="*.js"
+					excludes="*.ap.js, *.pro.js"
+				/>
+			</path>
+			<ac:sequential>
+				<ac:var name="clargs" value="${clargs} --js=&quot;@{jsfile}&quot;" />
+			</ac:sequential>
+		</ac:for>
+		<ac:var name="clargs" value="${clargs} --js_output_file=&quot;${js_outfile}&quot;"/>
+
+		<echo>${clargs}</echo>
+		<java jar="${ClosureCompiler.dir}/compiler.jar" fork="true">
+			<arg line="${clargs}"/>
+		</java>
+	</target>
+
+	<target name="gs-gzip-pro-tlsconfig">
+			<echo message="[gs-gzip-pro-tlsconfig] GZipping HTML, CSS and Javascript files ... "/>
+			<mkdir dir="${output.gzip.dir}" />
+			<mkdir dir="${op.js.dir}"/>
+			<mkdir dir="${op.css.dir}"/>
+
+			<copy tofile="${output.gzip.dir}/index.html" file="${webroot.dir}/index_pro.html" />
+			<gzip src="${output.gzip.dir}/index.html" destfile="${output.gzip.dir}/index.html.gz" />
+			<delete file="${output.gzip.dir}/index.html" />
+			
+			<gzip src="${webroot.dir}/gsprov.html" destfile="${output.gzip.dir}/gsprov.html.gz" />
+			<gzip src="${webroot.dir}/tlsconf.html" destfile="${output.gzip.dir}/tlsconf.html.gz" />
+			<gzip src="${webroot.dir}/eapcerts.html" destfile="${output.gzip.dir}/eapcerts.html.gz" />
+			<gzip src="${webroot.dir}/otafu.html" destfile="${output.gzip.dir}/otafu.html.gz" />
+		<gzip src="${webroot.dir}/sslcert.html" destfile="${output.gzip.dir}/sslcert.html.gz" />
+			<gzip src="${js_outfile}" destfile="${op.js.dir}/gs.min.js.gz" />
+			<gzip src="${webroot.dir}/css/styles.css" destfile="${op.css.dir}/styles.css.gz" />
+
+		</target>
+
+	<target name="gs-gzip-client-tlsconfig">
+			<echo message="[gs-gzip-client-tlsconfig] GZipping HTML, CSS and Javascript files ... "/>
+			<mkdir dir="${output.gzip.dir}" />
+			<mkdir dir="${op.js.dir}"/>
+			<mkdir dir="${op.css.dir}"/>
+
+			<copy tofile="${output.gzip.dir}/index.html" file="${webroot.dir}/index_client.html" />
+			<gzip src="${output.gzip.dir}/index.html" destfile="${output.gzip.dir}/index.html.gz" />
+			<delete file="${output.gzip.dir}/index.html" />
+			
+			<gzip src="${webroot.dir}/gsclient.html" destfile="${output.gzip.dir}/gsclient.html.gz" />
+			<gzip src="${webroot.dir}/eapcerts.html" destfile="${output.gzip.dir}/eapcerts.html.gz" />
+			<gzip src="${webroot.dir}/tlsconf.html" destfile="${output.gzip.dir}/tlsconf.html.gz" />
+			<gzip src="${webroot.dir}/otafu.html" destfile="${output.gzip.dir}/otafu.html.gz" />
+		<gzip src="${webroot.dir}/sslcert.html" destfile="${output.gzip.dir}/sslcert.html.gz" />
+			<gzip src="${js_outfile}" destfile="${op.js.dir}/gs.min.js.gz" />
+			<gzip src="${webroot.dir}/css/styles.css" destfile="${op.css.dir}/styles.css.gz" />
+
+		</target>
+
+	<target name="gs-package-pro-tlsconfig">
+		<echo message="[gs-package-pro-tlsconfig] Packaging the minified files ... "/>
+		<delete dir="${final.dir.gsprov.pro.tlsconfig}" includeemptydirs="true"/>
+		<mkdir dir="${final.dir.gsprov.pro.tlsconfig}" />
+		<copy todir="${final.dir.gsprov.pro.tlsconfig}">
+			<fileset dir="${output.gzip.dir}" />
+		</copy>
+		<delete dir="${output.gzip.dir}" />
+	</target>
+
+	<target name="gs-package-client-tlsconfig">
+		<echo message="[gs-package-client-tlsconfig] Packaging the minified files ... "/>
+		<delete dir="${final.dir.gsprov.client.tlsconfig}" includeemptydirs="true"/>
+		<mkdir dir="${final.dir.gsprov.client.tlsconfig}" />
+		<copy todir="${final.dir.gsprov.client.tlsconfig}">
+			<fileset dir="${output.gzip.dir}" />
+		</copy>
+		<delete dir="${output.gzip.dir}" />
+		
+	</target>
+
+</project>

@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE project [
+       <!ENTITY gsprops SYSTEM "gsbuild_properties">
+]>
+
+
+<project xmlns:ac="antlib:net.sf.antcontrib" default="gsbuild-all">
+
+	<!-- PROVIDE THE PATH WHERE YOU INSTALLED Closure Compiler -->
+	<!-- <property name="ClosureCompiler.dir" value="C:/closure-compiler" />  -->
+
+	<!-- PROVIDE THE PATH WHERE YOU INSTALLED Ant-Contrib -->
+	<taskdef resource="net/sf/antcontrib/antlib.xml" />
+
+	&gsprops;
+
+	<property name="final.dir.gsprov.client" value="gsprov_client" />
+	<property name="final.dir.gsprov.pro" value="gsprov_pro" />
+
+
+	<target name="gsbuild-all">
+		<antcall target="gs-tidy-css" />
+		<antcall target="gsbuild-client" />
+		<antcall target="gsbuild-pro" />
+	</target>
+
+
+	<target name="gs-minify-client">
+		<echo message="[gs-minify-client] Minification in progress"/>
+		<ac:var name="clargs" value=""/>
+		<ac:for param="jsfile">
+			<path>
+				<fileset 
+					dir="${js.dir}" 
+					includes="*.js" 
+					excludes="*.ap.js, *.pro.js, tlsconf.js"
+				/>
+			</path>
+			<ac:sequential>
+				<ac:var name="clargs" value="${clargs} --js=&quot;@{jsfile}&quot;" />
+			</ac:sequential>
+		</ac:for>
+		<ac:var name="clargs" value="${clargs} --js_output_file=&quot;${js.outfile}&quot;"/>
+
+		<echo>${clargs}</echo>
+		<java jar="${ClosureCompiler.dir}/compiler.jar" fork="true">
+			<arg line="${clargs}"/>
+		</java>
+	</target>
+
+
+	<target name="gs-tidy-css">
+		<mkdir dir="${css.out.dir}"/>
+		<exec executable="${csstidy.dir}/csstidy">
+			<arg value="${css.dir}/styles.css"/>
+			<arg value="--template=highest"/>
+			<arg value="${css.out.dir}/styles.css"/>
+		</exec>
+	</target>
+
+
+	<target name="gs-minify-pro">
+		<echo message="[gs-minify-pro] Minification in progress"/>
+		<ac:var name="clargs" value=""/>
+		<ac:for param="jsfile">
+			<path>
+				<fileset 
+					dir="${js.dir}" 
+					includes="*.js"
+					excludes="tlsconf.js"
+				/>
+			</path>
+			<ac:sequential>
+				<ac:var name="clargs" value="${clargs} --js=&quot;@{jsfile}&quot;" />
+			</ac:sequential>
+		</ac:for>
+		<ac:var name="clargs" value="${clargs} --js_output_file=&quot;${js_outfile}&quot;"/>
+
+		<echo>${clargs}</echo>
+		<java jar="${ClosureCompiler.dir}/compiler.jar" fork="true">
+			<arg line="${clargs}"/>
+		</java>
+	</target>
+
+
+
+
+	<target name="gsbuild-pro">
+		<echo message="[gsbuild-pro] Started main gsbuild ... "/>
+		<antcall target="gsclean" />
+		<!--<antcall target="gsconcat-ap" />-->
+		<antcall target="gsconcat" />
+		<antcall target="gs-minify-pro" />
+		<antcall target="gs-gzip-pro" />
+		<antcall target="gs-package-pro" />
+	</target>
+
+	<target name="gsbuild-client">
+		<echo message="[gsbuild] Started main gsbuild ... "/>
+		<antcall target="gsclean" />
+		<!--<antcall target="gsconcat-client" />-->
+		<antcall target="gsconcat" />
+		<antcall target="gs-minify-client" />
+		<antcall target="gs-gzip-client" />
+		<antcall target="gs-package-client" />
+	</target>
+
+
+
+	<target name="gs-gzip-client">
+		<echo message="[gs-gzip-client] GZipping HTML, CSS and Javascript files ... "/>
+		<mkdir dir="${output.gzip.dir}" />
+		<mkdir dir="${op.js.dir}"/>
+		<mkdir dir="${op.css.dir}"/>
+		
+		<gzip src="${webroot.dir}/eapcerts.html" destfile="${output.gzip.dir}/eapcerts.html.gz" />
+		<gzip src="${webroot.dir}/otafu.html" destfile="${output.gzip.dir}/otafu.html.gz" />
+		<gzip src="${webroot.dir}/gsclient.html" destfile="${output.gzip.dir}/gsclient.html.gz" />
+		<gzip src="${webroot.dir}/sslcert.html" destfile="${output.gzip.dir}/sslcert.html.gz" />
+		<gzip src="${js.outfile}" destfile="${op.js.dir}/gs.min.js.gz" />
+		<gzip src="${webroot.dir}/css/styles.css" destfile="${op.css.dir}/styles.css.gz" />
+
+	</target>
+
+
+
+
+
+	<target name="gsclean">
+		<echo message="[gsclean] Cleaning output directories"/>
+		<antcall target="jsclean" />
+		<antcall target="gs-concat-clean"/>
+		<antcall target="op-gzip-clean" />
+		<antcall target="final-dist-clean" />
+	</target>
+
+	<target name="jsclean">
+
+		<available file="${js_outfile}" property="js_outfile_exists" value="true"/>
+		<echo message="[jsclean] Set js_outfile_exists to ${js_outfile_exists}" />
+		<if>
+			<istrue value="${js_outfile_exists}"/>
+			<then>
+				<echo message="[jsclean] Deleting minified JS output file ${js_outfile}" />
+				<delete file="${js_outfile}"/>
+			</then>
+		</if>
+		<antcall target="jsclean-client" />
+		<antcall target="jsclean-ap">
+		</antcall>
+	</target>
+
+	<target name="jsclean-ap">
+			<available file="${js.outfile.ap}" property="js_outfile_ap_exists" value="true"/>
+			<echo message="[jsclean-client] Set js_outfile_ap_exists to ${js_outfile_ap_exists}" />
+			<if>
+				<istrue value="${js_outfile_ap_exists}"/>
+				<then>
+					<echo message="[jsclean-ap] Deleting minified JS output file ${js.outfile.ap}" />
+					<delete file="${js.outfile.ap}"/>
+				</then>
+			</if>
+		</target>
+	
+	<target name="jsclean-client">
+		<available file="${js.outfile.client}" property="js_outfile_client_exists" value="true"/>
+		<echo message="[jsclean-client] Set js_outfile_client_exists to ${js_outfile_client_exists}" />
+		<if>
+			<istrue value="${js_outfile_client_exists}"/>
+			<then>
+				<echo message="[jsclean-client] Deleting minified JS output file ${js.outfile.client}" />
+				<delete file="${js.outfile.client}"/>
+			</then>
+		</if>
+	</target>
+
+
+	<target name="op-gzip-clean">
+		<available file="${output.gzip.dir}" type="dir" property="gzip_dir_exists" value="true" />
+		<if>
+			<istrue value="${gzip_dir_exists}"/>
+			<then>
+				<delete includeEmptyDirs="true">
+					<fileset dir="${output.gzip.dir}"/>
+				</delete>
+			</then>
+		</if>
+	</target>
+
+
+	<target name="final-dist-clean">
+		<available file="${final.dist.dir}" type="dir" property="dist_dir_exists" value="true" />
+		<if>
+			<istrue value="${dist_dir_exists}"/>
+			<then>
+				<echo message="[final-dist-clean] Deleting temporary directory ${final.dist.dir}"/>
+				<delete includeEmptyDirs="true">
+					<fileset dir="${final.dist.dir}"/>
+				</delete>
+			</then>
+		</if>
+	</target>
+
+
+
+	<target name="gs-concat-clean">
+		<available file="${concat.js.file}" type="file" property="concat_js_exists" value="true"/>
+		<if>
+			<istrue value="${concat_js_exists}"/>
+
+			<then>
+				<delete file="${concat.js.file}" />
+			</then>
+		</if>
+	</target>
+
+	<target name="gsconcat" depends="gs-concat-clean">
+		<echo message="[gsconcat] Concatenating JS files into a single file ${concat.js.file}" />
+		<concat destfile="${concat.js.file}">
+			<fileset 
+				dir="${js.dir}" 
+				excludes="${js_outfile}, ${js.outfile.ap}, ${js.outfile.client}"
+				includes="*.js" 
+			/>
+		</concat>
+	</target>
+
+	<target name="gs-concat-clean-client">
+		<available file="${concat.js.file.client}" type="file" property="concat_js_client_exists" value="true"/>
+		<if>
+			<istrue value="${concat_js_client_exists}"/>
+
+			<then>
+				<delete file="${concat.js.file.client}" />
+			</then>
+		</if>
+	</target>
+
+	<target name="gsconcat-client" depends="gs-concat-clean-client">
+		<echo message="[gsconcat] Concatenating JS files into a single file ${concat.js.file}" />
+		<concat destfile="${concat.js.file.client}">
+			<fileset 
+					dir="${js.dir}" 
+					excludes="${js_outfile}, ${js.outfile.ap}, ${js.outfile.client}, *.ap.js"
+					includes="*.js" 
+				/>
+		</concat>
+	</target>
+
+
+
+	<target name="gs-gzip-pro">
+		<echo message="[gs-gzip-pro] GZipping HTML, CSS and Javascript files ... "/>
+		<mkdir dir="${output.gzip.dir}" />
+		<mkdir dir="${op.js.dir}"/>
+		<mkdir dir="${op.css.dir}"/>
+
+		<gzip src="${webroot.dir}/gsprov.html" destfile="${output.gzip.dir}/gsprov.html.gz" />
+		<gzip src="${webroot.dir}/eapcerts.html" destfile="${output.gzip.dir}/eapcerts.html.gz" />
+		<gzip src="${webroot.dir}/otafu.html" destfile="${output.gzip.dir}/otafu.html.gz" />
+		<gzip src="${js_outfile}" destfile="${op.js.dir}/gs.min.js.gz" />
+		<gzip src="${webroot.dir}/css/styles.css" destfile="${op.css.dir}/styles.css.gz" />
+
+	</target>
+
+
+	<target name="gs-package-pro">
+		<echo message="[gs-package-pro] Packaging the minified files ... "/>
+		<delete dir="${final.dir.gsprov.pro}" includeemptydirs="true"/>
+		<mkdir dir="${final.dir.gsprov.pro}" />
+		<copy todir="${final.dir.gsprov.pro}">
+			<fileset dir="${output.gzip.dir}" />
+		</copy>
+		<delete dir="${output.gzip.dir}" />
+	</target>
+
+
+
+	<target name="gs-package-client">
+		<echo message="[gs-package-client] Packaging the minified files ... "/>
+		<delete dir="${final.dir.gsprov.client}" includeemptydirs="true"/>
+		<mkdir dir="${final.dir.gsprov.client}" />
+		<copy todir="${final.dir.gsprov.client}">
+			<fileset dir="${output.gzip.dir}" />
+		</copy>
+		<delete dir="${output.gzip.dir}" />
+		
+	</target>
+</project>

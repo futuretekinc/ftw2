@@ -1,0 +1,19 @@
+##########################################################################
+# Product Name : GS2011 MIZ/MIE v3.3 or later    Software Release Version : GEPS v5.1.5 GA
+##########################################################################
+# Internal Flash  = 4MB
+# External Flash  = None
+# Application = TLS AEK (Hostless, Web Server)
+# Build Output  = SDK Package
+# Wi-Fi Mode = Wi-Fi Station|Wi-Fi (Limited) AP
+# Core Network Services = IPv4
+# CNSIPv4 = DHCP Server|DNS Server|Discovery mDNS,DNS-SD|HTTP 1.1 Client|HTTPS 1.1 Server|HTTP 1.1 Server|IGMP (Multicast) Support|CoAP Client
+# Other Networking Services = Network Connection Manager
+# Provisioning Method = WPS 2.0|Wireless Provisioning
+# Provisioning Pages = Professional(AP and Client)
+# Firmware Update Method = OTAFU Push Method
+# Firmware Update Option = Backup Copy (3 versions)
+# Firmware Update Interface = GainSpan Web pages
+# IoT/Cloud Connectivity = None
+# Build Configuration Id = 9686
+##########################################################################

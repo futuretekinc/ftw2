@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<meta http-equiv="Cache-control" content="no-cache" />
+<meta http-equiv="Expires" content="-1" />
+<meta http-equiv="Pragma" content="no-cache" />
+<title>OTA Firmware Update</title>
+<link rel="stylesheet" href="css/styles.css" type="text/css" />
+<script type="text/javascript" src="js/gs.min.js"></script>
+<script type="text/javascript">
+	GS_FWUPCONFIG_API = '/gainspan/system/fwupconfig';
+	var gs2000 = true,
+		supportsDsv = false,
+		divSignature,
+		otafuForm;
+	
+	OnReady(detectDsvSupport);
+	
+	function detectDsvSupport(){
+		divSignature = document.getElementById('divSignature');
+		otafuForm = document.forms['multipost'];
+		var fwxhr = initializeXhr();
+		fwxhr.onreadystatechange = function(){
+			try {
+				if (fwxhr.readyState === 4) {
+				  if (fwxhr.status === 200) {
+					var respXml = parseResponse(fwxhr.responseXml, fwxhr.responseText);
+					var root = respXml.getElementsByTagName('fwupconfig');
+					if (root && root.length > 0) {
+						var dsv = getTagContent(root[0], 'dsv');
+						if(dsv.indexOf('enable') >= 0){
+							supportsDsv = true;
+							unHide(divSignature);
+						}
+						else{
+							supportsDsv = false;
+							hide(divSignature);
+						}
+							
+					}
+				  } else if(fwxhr.status === 404) {
+					   supportsDsv = false;
+				  }
+				}
+			  }
+			  catch( e ) {
+				  if(e.message){
+					  alert('Caught Exception: ' + e.message);
+				  }
+				  else if(e.description){
+					  alert('Caught Exception: ' + e.description);
+				  }
+			  }
+		};
+		
+		var isAsync = true;
+		fwxhr.open('GET', GS_FWUPCONFIG_API, isAsync);
+
+		fwxhr.send(null);
+	}
+	
+	function validateOtafuForm() {
+		return (gs2000 == true ? validateGs2000() : validatePreGs2000()) &&
+			(supportsDsv == true ? validateDsv() : true);
+	}
+	
+	function validateGs2000(){
+		return validateFileInput(otafuForm.FileCombinedImage, 'Please choose the Firmware Image');
+	}
+	
+	function validateDsv() {
+		return validateFileInput(otafuForm.FileSignature, 'Please choose the digital signature file');
+	}
+	
+	function validateFileInput(file, errMsg){
+		if(!file.value || file.value.length == 0){
+			alert(errMsg);
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * Submits the OTAFU form to the server.
+	 */
+	function submitOtafuForm() {
+		if (validateOtafuForm()) {
+			otafuForm.submit();
+		}
+	}
+</script>
+</head>
+
+<body onload="initialize();">
+	<div class="global">
+		<div class="logo">
+			<img src="logo.gif" alt="GainSpan" />
+		</div>
+		<div id="pghead">
+			<h1 class="pghead">OTA Firmware Update</h1>
+		</div>
+		<form name="multipost" action="/gainspan/system/fwuploc"
+			enctype="multipart/form-data" method="post">
+
+			<!--
+				Following empty divs are not required in GS2000 
+				Retaining them in order to avoid additional conditional checks in JS 
+			-->
+			
+			<div class="center" id="divBackup" style="display:none"></div>
+			
+			<hr />
+			
+			<div class="center" id="divApp1" style="display:none"></div>
+			<div class="center" id="divApp2" style="display:none"></div>
+			<div class="center" id="divWlan" style="display:none"></div>
+			<div class="center" id="divWebPageImage" style="display:none"></div>
+
+			<div class="center" id="divCombinedImage">
+				<b id="CombinedImage"> Firmware Image : </b><input type="file" name="fw_image"
+						id="FileCombinedImage" />
+			</div>
+			
+			<div class="center" id="divSignature" style="display:none">
+				<b id="signature"> Signature : </b><input type="file" name="digital_sign"
+						id="FileSignature" />
+			</div>
+
+			<div class="center">
+				<div>
+					<input type="button" value="Upload" onclick="submitOtafuForm();" />
+				</div>
+			</div>
+			<p />
+			<hr />
+			<div class="center">
+				<div>
+					<small>OTAFU Version: <b>0.9.1</b> </small>
+				</div>
+			</div>
+		</form>
+	</div>
+
+</body>
+</html>
+
+
+
