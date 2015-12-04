@@ -398,7 +398,7 @@ GsnNcm_Execute(GSN_NCM_CTX_T* pNcm)
 				GsnNcm_L2ConnectProcess(pNcm,alreadyConnectedEvent);
                 break;            
             }
-#ifdef S2W_NCM_ROAMING_SUPPORT 					
+#ifdef FTW_NCM_ROAMING_SUPPORT 					
 			case GSN_NCM_CTX_MSG_ID_ROAM_L2DISCONNECTED:
 			{
 				if(	pNcm->config.roamingCfgParams.maintainL3Con == 0)
@@ -465,13 +465,13 @@ GsnNcm_Execute(GSN_NCM_CTX_T* pNcm)
                 } 
                 pNcm->L3ConnectCnt = pNcm->config.retryCountsConfig.maxL3ConnectCnt;
                 //GsnNwIf_DhcpStop(pNcm->pNwif);
-#ifdef S2W_NCM_ROAMING_SUPPORT					
+#ifdef FTW_NCM_ROAMING_SUPPORT					
 				if(pNcm->roamingParams.roamingTriggered == 1)
 					GsnNcm_RoamReInit(pNcm);
 #endif	                
                 break;
 			}
-#ifdef S2W_NCM_ROAMING_SUPPORT		
+#ifdef FTW_NCM_ROAMING_SUPPORT		
             case GSN_NCM_CTX_MSG_ID_ROAM_STARTSCAN:
 		{
 					/*check whether scan retry count is met or not*/
@@ -579,7 +579,7 @@ GsnNcm_DisassocIndCb(VOID* ctx, GSN_WDD_DISASSOCIATION_CB_INFO *pDisAssocInfo)
     pNcm = (GSN_NCM_CTX_T*)ctx;
 
 	GSN_NCM_PRINTF("\r\n[NCM] GsnNcm_DisassocIndCb\r\n");
-#ifdef S2W_NCM_ROAMING_SUPPORT 	
+#ifdef FTW_NCM_ROAMING_SUPPORT 	
 	
 	if(pNcm->config.roamingCfgParams.roamEnable == 1)
 	{
@@ -607,7 +607,7 @@ GsnNcm_BeconMissIndCb(VOID* ctx, UINT32 beaconMissCnt)
 		-if roam stop returns failure , disassociation is not processed
 	*/
 
-#ifdef S2W_NCM_ROAMING_SUPPORT 		
+#ifdef FTW_NCM_ROAMING_SUPPORT 		
 	if(pNcm->config.roamingCfgParams.roamEnable == 1)
 	{
 		retCode=GsnNcm_RoamStop(pNcm,0);
@@ -900,7 +900,7 @@ GsnNcm_L2DisconnectCb(VOID* ctx, INT32 status)
     
     GSN_NCM_PRINTF("[NCM] L2DisconnectCb:%x\r\n", status);
 
-#ifdef S2W_NCM_ROAMING_SUPPORT				
+#ifdef FTW_NCM_ROAMING_SUPPORT				
 	if(pNcm->roamingParams.roamingTriggered  == 1 && status == GSN_SUCCESS )
 	{		
 		GsnNcm_MsgPost(pNcm,GSN_NCM_CTX_MSG_ID_ROAM_L2DISCONNECTED);
@@ -978,7 +978,7 @@ GsnNcm_L3Connect(GSN_NCM_CTX_T* pNcm)
     GSN_STATUS_T retVal;
     pNcm->pNwif->notifyCb = GsnNcm_L3ConnectCb;
     pNcm->pNwif->notifyCtxt = pNcm;
-#ifdef S2W_NCM_ROAMING_SUPPORT	
+#ifdef FTW_NCM_ROAMING_SUPPORT	
 	if(pNcm->roamingParams.roamingTriggered == 1 && pNcm->config.roamingCfgParams.maintainL3Con == 0)
 	{
 		retVal = GsnNwIf_Open(pNcm->pNwif, &pNcm->config.ipConfig,&pNcm->config.dhcpV4Cfg);
@@ -1112,7 +1112,7 @@ GsnNcm_L2ConnectProcess(GSN_NCM_CTX_T* pNcm,UINT8 alreadyConnectedEvent )
 	{
 		(pNcm->notifCb)(pNcm->notifCbCtx, pNcm, GSN_NCM_NOTIF_ID_L2_CONNECTED);
 	}
-#ifdef S2W_NCM_ROAMING_SUPPORT			
+#ifdef FTW_NCM_ROAMING_SUPPORT			
 	if((pNcm->roamingParams.roamingTriggered == TRUE) && (pNcm->config.roamingCfgParams.maintainL3Con == TRUE))				
 	{
 		GsnNcm_RoamReInit(pNcm);	

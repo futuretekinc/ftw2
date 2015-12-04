@@ -92,7 +92,7 @@ extern "C" {
 #endif
 
 
-#ifdef S2W_NCM_ROAMING_SUPPORT
+#ifdef FTW_NCM_ROAMING_SUPPORT
 #define RSSI_LEVEL_CONSTANT_TH 	 0
 #define RSSI_BELOW_LOWER_TH 	 	 1
 #define RSSI_ABOVE_LOWER_TH    	 2
@@ -221,7 +221,7 @@ typedef enum GSN_NCM_MSGID
     GSN_NCM_CTX_MSG_ID_L3_CONNECTED,
     GSN_NCM_CTX_MSG_ID_L3_DISCONNECTED,
     GSN_NCM_CTX_MSG_ID_L2_IDLE,
-#ifdef S2W_NCM_ROAMING_SUPPORT    
+#ifdef FTW_NCM_ROAMING_SUPPORT    
     GSN_NCM_CTX_MSG_ID_ROAM_STARTSCAN,
     GSN_NCM_CTX_MSG_ID_ROAM_SCANTMR_PROCESS,
     GSN_NCM_CTX_MSG_ID_ROAM_L2DISCONNECTED,   
@@ -317,7 +317,7 @@ typedef struct GSN_NCM_CONFIG
 	BOOL							scanEntry;
 	UINT16 							inactivityTimeoutInSec;
 	UINT32                          groupKeyUpdateTime;
-#ifdef S2W_NCM_ROAMING_SUPPORT 	
+#ifdef FTW_NCM_ROAMING_SUPPORT 	
 	GSN_NCM_ROAMCONFIG_T roamingCfgParams;	
 #endif
 }GSN_NCM_CONFIG_T;
@@ -369,7 +369,7 @@ typedef struct GSN_NCM_CTX
 #ifdef GSN_NCM_AUTO_CHANNEL_SWITCH	
 	UINT32					currentChannel;
 #endif	
-#ifdef S2W_NCM_ROAMING_SUPPORT	
+#ifdef FTW_NCM_ROAMING_SUPPORT	
 	GSN_NCM_ROAMDATA_T roamingParams;
 #endif    
         GSN_WDD_SCAN_ENTRY_T                    scanResults;

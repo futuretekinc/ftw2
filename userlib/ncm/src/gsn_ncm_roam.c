@@ -29,7 +29,7 @@
 * Description : This file contains public definitions for nw connection manager.
 * It provides APIs for the nw connection manager
 *******************************************************************************/
-#if defined(S2W_NCM_ROAMING_SUPPORT) && defined(S2W_NCM_SUPPORT_ENABLE)			
+#if defined(FTW_NCM_ROAMING_SUPPORT) && defined(FTW_NCM_SUPPORT_ENABLE)			
 #if 0
 #define ncmDbg_Printf S2w_Printf
 #else

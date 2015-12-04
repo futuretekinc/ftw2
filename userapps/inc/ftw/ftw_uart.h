@@ -1,0 +1,84 @@
+#ifndef _FTW_UART_H_
+#define _FTW_UART_H_
+
+#include "ftw_types.h"
+
+typedef enum FTW_UART_BAUDRATE_ENUM
+{
+    FTW_UART_BAUDRATE_1K2   =  1200,
+    FTW_UART_BAUDRATE_2K4   =  2400,
+    FTW_UART_BAUDRATE_4K8   =  4800,
+    FTW_UART_BAUDRATE_9K6   =  9600,
+    FTW_UART_BAUDRATE_19K2  =  19200,
+    FTW_UART_BAUDRATE_38K4  =  38400,
+    FTW_UART_BAUDRATE_57K6  =  57600,
+    FTW_UART_BAUDRATE_115K2 =  115200,
+    FTW_UART_BAUDRATE_230K4 =  230400,
+    FTW_UART_BAUDRATE_460K8 =  460800,
+    FTW_UART_BAUDRATE_921K6 =  921600,
+    FTW_UART_BAUDRATE_UNDEFINED
+} FTW_UART_BAUDRATE, _PTR_ FTW_UART_BAUDRATE_PTR;
+
+
+typedef enum FTW_UART_DATABITS_ENUM
+{
+    FTW_UART_DATABITS_5 = 0,
+    FTW_UART_DATABITS_6 = 1,
+    FTW_UART_DATABITS_7 = 2,
+    FTW_UART_DATABITS_8 = 3
+} FTW_UART_DATABITS, _PTR_ FTW_UART_DATABITS_PTR;
+
+
+typedef enum FTW_UART_STOPBITS_ENUM
+{
+    FTW_UART_STOPBITS_1 = 0,
+    FTW_UART_STOPBITS_2 = 1
+} FTW_UART_STOPBITS, _PTR_ FTW_UART_STOPBITS_PTR;
+
+typedef enum FTW_UART_PARITYBIT_ENUM
+{
+    FTW_UART_PARITYBIT_ODD   = 0,
+    FTW_UART_PARITYBIT_EVEN  = 1,
+    FTW_UART_PARITYBIT_MARK  = 2, /* The parity bit is always 1. */
+    FTW_UART_PARITYBIT_SPACE = 3, /* The parity bit is always 0. */
+    FTW_UART_PARITYBIT_NONE
+} FTW_UART_PARITYBIT, _PTR_ FTW_UART_PARITYBIT_PTR;
+
+typedef struct  FTW_UART_CONFIG_STRUCT
+{
+    
+    FTW_UART_BAUDRATE       xBaudRate;
+    FTW_UART_DATABITS       xDataBits;
+    FTW_UART_STOPBITS       xStopBits;
+    FTW_UART_PARITYBIT      xParityBits;
+    void*                   pBuffer;
+    UINT32                  ulBuffSize;
+    BOOLEAN                 bHWFlowCtrl;
+    BOOLEAN                 bSWFlowCtrl;
+}   FTW_UART_CONFIG, _PTR_ FTW_UART_CONFIG_PTR;
+
+typedef struct  FTW_UART_STRUCT
+{
+    GSN_UART_HANDLE_T   hGSNUart;
+    GSN_OSAL_SEM_T      xWriteSemaphore;
+    UINT8               pBuffer[4096];
+}   FTW_UART, _PTR_ FTW_UART_PTR;
+
+typedef uint_32 FTW_UART_ID;
+
+#define FTW_UART0       0
+
+FTW_RET FTW_UART_open(FTW_UART_ID xID, FTW_UART_CONFIG_PTR pxConfig);
+FTW_RET FTW_UART_close(FTW_UART_ID xID);
+FTW_RET FTW_UART_setConfig(FTW_UART_ID xID, FTW_UART_CONFIG_PTR pxConfig);
+FTW_RET FTW_UART_getConfig(FTW_UART_ID xID, FTW_UART_CONFIG_PTR pxConfig);
+FTW_RET FTW_UART_setHWFlowCtrl(FTW_UART_ID xID, BOOL bEnable);
+FTW_RET FTW_UART_setSWFlowCtrl(FTW_UART_ID xID, BOOL bEnable);
+
+BOOL    FTW_UART_txStatusGet(void);
+
+VOID    FTW_UART_putc(FTW_UART_ID xID, UINT8 ch);
+VOID    FTW_UART_put(FTW_UART_ID xID, const VOID *buf, UINT32 len);
+UINT8   FTW_UART_getc(FTW_UART_ID xID, UINT8 *ch);
+VOID    FTW_UART_get(FTW_UART_ID xID, UINT8 *ch, UINT16 dataLen);
+#endif
